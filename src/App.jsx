@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getPersons, 
-  addPerson, 
-  updatePersonStatus, 
-  getPets, 
-  addPet, 
-  updatePetStatus, 
-  getCenters, 
-  getMetrics 
+import {
+  getPersons,
+  addPerson,
+  updatePersonStatus,
+  getPets,
+  addPet,
+  updatePetStatus,
+  getCenters,
+  getMetrics
 } from './services/db';
 import { compressImage } from './utils/imageCompressor';
 
@@ -17,19 +17,19 @@ const VENEZUELAN_STATES = ["Caracas", "Aragua", "Carabobo", "La Guaira"];
 export default function App() {
   const [activeTab, setActiveTab] = useState('inicio');
   const [adminMode, setAdminMode] = useState(false);
-  
+
   // Datos
   const [persons, setPersons] = useState([]);
   const [pets, setPets] = useState([]);
   const [centers, setCenters] = useState([]);
   const [metrics, setMetrics] = useState(null);
-  
+
   // Búsqueda y Filtros
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedState, setSelectedState] = useState('Todos');
   const [selectedStatus, setSelectedStatus] = useState('Todos');
   const [selectedSpecies, setSelectedSpecies] = useState('Todos');
-  
+
   // Modales Unificados
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportFormTab, setReportFormTab] = useState('person'); // 'person' o 'pet'
@@ -44,7 +44,7 @@ export default function App() {
     notas: ''
   });
 
-  
+
   // Formulario Persona
   const [personForm, setPersonForm] = useState({
     nombre: '', edad: '', genero: 'Masculino',
@@ -54,7 +54,7 @@ export default function App() {
   });
   const [personPhoto, setPersonPhoto] = useState(null);
   const [personPhotoPreview, setPersonPhotoPreview] = useState(null);
-  
+
   // Formulario Mascota
   const [petForm, setPetForm] = useState({
     nombre: '', especie: 'Perro', raza: '', color: '',
@@ -70,7 +70,7 @@ export default function App() {
     const fetchedPets = await getPets();
     const fetchedCenters = await getCenters();
     const fetchedMetrics = await getMetrics();
-    
+
     setPersons(fetchedPersons);
     setPets(fetchedPets);
     setCenters(fetchedCenters);
@@ -172,7 +172,7 @@ export default function App() {
 
     await addPerson(docData);
     setShowReportModal(false);
-    
+
     // Resetear formulario
     setPersonForm({
       nombre: '', edad: '', genero: 'Masculino',
@@ -182,7 +182,7 @@ export default function App() {
     });
     setPersonPhoto(null);
     setPersonPhotoPreview(null);
-    
+
     await loadData();
     alert("Persona registrada con éxito.");
   };
@@ -240,36 +240,36 @@ export default function App() {
 
   // --- FILTROS DE BÚSQUEDA ---
   const filteredPersons = persons.filter(p => {
-    const matchQuery = normalizeText(p.nombre).includes(normalizeText(searchQuery)) || 
-                       normalizeText(p.señas).includes(normalizeText(searchQuery)) ||
-                       normalizeText(p.municipio).includes(normalizeText(searchQuery)) ||
-                       normalizeText(p.sector).includes(normalizeText(searchQuery));
-    
+    const matchQuery = normalizeText(p.nombre).includes(normalizeText(searchQuery)) ||
+      normalizeText(p.señas).includes(normalizeText(searchQuery)) ||
+      normalizeText(p.municipio).includes(normalizeText(searchQuery)) ||
+      normalizeText(p.sector).includes(normalizeText(searchQuery));
+
     const matchState = selectedState === 'Todos' || p.estado === selectedState;
     const matchStatus = selectedStatus === 'Todos' || p.estatus === selectedStatus;
-    
+
     return matchQuery && matchState && matchStatus;
   });
 
   const filteredPets = pets.filter(m => {
-    const matchQuery = normalizeText(m.nombre).includes(normalizeText(searchQuery)) || 
-                       normalizeText(m.raza).includes(normalizeText(searchQuery)) ||
-                       normalizeText(m.señas).includes(normalizeText(searchQuery)) ||
-                       normalizeText(m.municipio).includes(normalizeText(searchQuery));
-    
+    const matchQuery = normalizeText(m.nombre).includes(normalizeText(searchQuery)) ||
+      normalizeText(m.raza).includes(normalizeText(searchQuery)) ||
+      normalizeText(m.señas).includes(normalizeText(searchQuery)) ||
+      normalizeText(m.municipio).includes(normalizeText(searchQuery));
+
     const matchState = selectedState === 'Todos' || m.estado === selectedState;
     const matchStatus = selectedStatus === 'Todos' || m.estatus === selectedStatus;
     const matchSpecies = selectedSpecies === 'Todos' || m.especie === selectedSpecies;
-    
+
     return matchQuery && matchState && matchStatus && matchSpecies;
   });
 
   const filteredCenters = centers.filter(c => {
-    const matchQuery = normalizeText(c.nombre).includes(normalizeText(searchQuery)) || 
-                       normalizeText(c.direccion).includes(normalizeText(searchQuery));
-    
+    const matchQuery = normalizeText(c.nombre).includes(normalizeText(searchQuery)) ||
+      normalizeText(c.direccion).includes(normalizeText(searchQuery));
+
     const matchState = selectedState === 'Todos' || c.estado === selectedState;
-    
+
     return matchQuery && matchState;
   });
 
@@ -315,7 +315,7 @@ export default function App() {
       <header className="app-header">
         <div className="app-logo">
           <span className="logo-icon">🚨</span>
-          <span className="logo-text">S.O.S Venezuela</span>
+          <span className="logo-text">Ayuda Venezuela</span>
         </div>
 
         {/* Navegación Desktop */}
@@ -342,7 +342,7 @@ export default function App() {
           </button>
         </nav>
 
-        <button 
+        <button
           onClick={() => {
             if (activeTab === 'mascotas') {
               setReportFormTab('pet');
@@ -350,7 +350,7 @@ export default function App() {
               setReportFormTab('person');
             }
             setShowReportModal(true);
-          }} 
+          }}
           className="btn-report-header"
         >
           <span className="fab-icon" style={{ marginRight: '4px' }}>✚</span>
@@ -360,7 +360,7 @@ export default function App() {
 
       {/* CONTENIDO DINÁMICO */}
       <main className="app-content">
-        
+
         {/* PESTAÑA 1: INICIO (DASHBOARD) */}
         {activeTab === 'inicio' && (
           <div className="dashboard-layout">
@@ -374,7 +374,7 @@ export default function App() {
               </div>
 
               <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700' }}>Panel de Monitoreo en Tiempo Real</h3>
-              
+
               {metrics ? (
                 <div className="dashboard-metrics">
                   <div className="metric-card">
@@ -448,18 +448,18 @@ export default function App() {
           <div className="page-layout">
             <aside className="page-sidebar">
               <h4 className="sidebar-title">Filtros de Búsqueda</h4>
-              
+
               <div className="sidebar-group">
                 <h5>Estado</h5>
                 <div className="filter-tabs">
-                  <span 
+                  <span
                     className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
                     onClick={() => setSelectedState('Todos')}
                   >
                     Todos los Estados
                   </span>
                   {VENEZUELAN_STATES.map(s => (
-                    <span 
+                    <span
                       key={s}
                       className={`filter-pill ${selectedState === s ? 'active' : ''}`}
                       onClick={() => setSelectedState(s)}
@@ -473,19 +473,19 @@ export default function App() {
               <div className="sidebar-group" style={{ marginTop: '16px' }}>
                 <h5>Estatus</h5>
                 <div className="filter-tabs">
-                  <span 
+                  <span
                     className={`filter-pill ${selectedStatus === 'Todos' ? 'active' : ''}`}
                     onClick={() => setSelectedStatus('Todos')}
                   >
                     Cualquier Estatus
                   </span>
-                  <span 
+                  <span
                     className={`filter-pill ${selectedStatus === 'Desaparecido' ? 'active' : ''}`}
                     onClick={() => setSelectedStatus('Desaparecido')}
                   >
                     🔴 Desaparecidos
                   </span>
-                  <span 
+                  <span
                     className={`filter-pill ${selectedStatus === 'Localizado' ? 'active' : ''}`}
                     onClick={() => setSelectedStatus('Localizado')}
                   >
@@ -497,10 +497,10 @@ export default function App() {
 
             <div className="page-main-content">
               <div className="search-wrapper">
-                <input 
-                  type="text" 
-                  placeholder="Buscar por nombre, sector o señas..." 
-                  className="input-field" 
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, sector o señas..."
+                  className="input-field"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -540,14 +540,14 @@ export default function App() {
               <div className="sidebar-group">
                 <h5>Estado</h5>
                 <div className="filter-tabs">
-                  <span 
+                  <span
                     className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
                     onClick={() => setSelectedState('Todos')}
                   >
                     Todos los Estados
                   </span>
                   {VENEZUELAN_STATES.map(s => (
-                    <span 
+                    <span
                       key={s}
                       className={`filter-pill ${selectedState === s ? 'active' : ''}`}
                       onClick={() => setSelectedState(s)}
@@ -561,10 +561,10 @@ export default function App() {
 
             <div className="page-main-content">
               <div className="search-wrapper">
-                <input 
-                  type="text" 
-                  placeholder="Buscar centro de acopio por nombre o sector..." 
-                  className="input-field" 
+                <input
+                  type="text"
+                  placeholder="Buscar centro de acopio por nombre o sector..."
+                  className="input-field"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -576,14 +576,14 @@ export default function App() {
                     <div key={c.id} className="card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{c.nombre}</h4>
-                        <span className={`record-badge`} style={{ 
-                          backgroundColor: c.estatus === 'Activo' ? 'var(--color-success-light)' : 'var(--color-danger-light)', 
+                        <span className={`record-badge`} style={{
+                          backgroundColor: c.estatus === 'Activo' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
                           color: c.estatus === 'Activo' ? 'var(--color-success)' : 'var(--color-danger)'
                         }}>
                           {c.estatus}
                         </span>
                       </div>
-                      
+
                       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
                         📍 {c.direccion} ({c.estado})
                       </p>
@@ -620,18 +620,18 @@ export default function App() {
           <div className="page-layout">
             <aside className="page-sidebar">
               <h4 className="sidebar-title">Filtros de Búsqueda</h4>
-              
+
               <div className="sidebar-group">
                 <h5>Estado</h5>
                 <div className="filter-tabs">
-                  <span 
+                  <span
                     className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
                     onClick={() => setSelectedState('Todos')}
                   >
                     Todos los Estados
                   </span>
                   {VENEZUELAN_STATES.map(s => (
-                    <span 
+                    <span
                       key={s}
                       className={`filter-pill ${selectedState === s ? 'active' : ''}`}
                       onClick={() => setSelectedState(s)}
@@ -645,19 +645,19 @@ export default function App() {
               <div className="sidebar-group" style={{ marginTop: '16px' }}>
                 <h5>Especie</h5>
                 <div className="filter-tabs">
-                  <span 
+                  <span
                     className={`filter-pill ${selectedSpecies === 'Todos' ? 'active' : ''}`}
                     onClick={() => setSelectedSpecies('Todos')}
                   >
                     Todas las Especies
                   </span>
-                  <span 
+                  <span
                     className={`filter-pill ${selectedSpecies === 'Perro' ? 'active' : ''}`}
                     onClick={() => setSelectedSpecies('Perro')}
                   >
                     🐶 Perros
                   </span>
-                  <span 
+                  <span
                     className={`filter-pill ${selectedSpecies === 'Gato' ? 'active' : ''}`}
                     onClick={() => setSelectedSpecies('Gato')}
                   >
@@ -669,10 +669,10 @@ export default function App() {
 
             <div className="page-main-content">
               <div className="search-wrapper">
-                <input 
-                  type="text" 
-                  placeholder="Buscar por mascota, raza o color..." 
-                  className="input-field" 
+                <input
+                  type="text"
+                  placeholder="Buscar por mascota, raza o color..."
+                  className="input-field"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -777,7 +777,7 @@ export default function App() {
               <h3 className="modal-title">Ficha de Información</h3>
               <button className="modal-close" onClick={() => setSelectedRecord(null)}>×</button>
             </div>
-            
+
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
               {renderAvatar(selectedRecord, recordType === 'pet')}
               <h2 style={{ marginTop: '8px', fontSize: '20px' }}>{selectedRecord.nombre}</h2>
@@ -793,7 +793,7 @@ export default function App() {
                   <p style={{ marginBottom: '6px' }}><strong>Género:</strong> {selectedRecord.genero}</p>
                   <p style={{ marginBottom: '6px' }}><strong>Último lugar visto:</strong> {selectedRecord.sector}, {selectedRecord.municipio}, {selectedRecord.estado}</p>
                   <p style={{ marginBottom: '6px' }}><strong>Señas particulares:</strong> {selectedRecord.señas}</p>
-                  
+
                   <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
                     <p style={{ marginBottom: '4px' }}><strong>Familiar Contacto:</strong> {selectedRecord.reportanteNombre}</p>
                     <p><strong>Teléfono:</strong> <a href={`tel:${selectedRecord.reportanteTelefono}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.reportanteTelefono}</a></p>
@@ -807,7 +807,7 @@ export default function App() {
                   <p style={{ marginBottom: '6px' }}><strong>Collar:</strong> {selectedRecord.collar}</p>
                   <p style={{ marginBottom: '6px' }}><strong>Ubicación de pérdida:</strong> {selectedRecord.sector}, {selectedRecord.municipio}, {selectedRecord.estado}</p>
                   <p style={{ marginBottom: '6px' }}><strong>Señas particulares / Detalles:</strong> {selectedRecord.señas}</p>
-                  
+
                   <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
                     <p style={{ marginBottom: '4px' }}><strong>Contacto Dueño:</strong> {selectedRecord.contactoNombre}</p>
                     <p><strong>Teléfono:</strong> <a href={`tel:${selectedRecord.contactoTelefono}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.contactoTelefono}</a></p>
@@ -824,7 +824,7 @@ export default function App() {
                 <p style={{ marginBottom: '4px' }}><strong>Ubicación actual:</strong> {selectedRecord.localizadorUbicacion}</p>
                 {selectedRecord.localizadorNotas && <p style={{ marginBottom: '4px' }}><strong>Estado/Notas:</strong> {selectedRecord.localizadorNotas}</p>}
                 {selectedRecord.fechaLocalizacion && <p style={{ marginBottom: '6px', fontSize: '11px', color: 'var(--text-secondary)' }}>Reportado el {new Date(selectedRecord.fechaLocalizacion).toLocaleString()}</p>}
-                
+
                 <div style={{ marginTop: '10px', borderTop: '1px solid rgba(30, 184, 120, 0.2)', paddingTop: '10px' }}>
                   <p style={{ fontWeight: '700', marginBottom: '6px', fontSize: '12px' }}>Contactar a quien lo localizó:</p>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -842,15 +842,15 @@ export default function App() {
             {/* Acción Pública de Localización (Cualquier usuario puede reportar hallazgo) */}
             {selectedRecord.estatus === 'Desaparecido' && (
               <div style={{ marginTop: '16px' }}>
-                <button 
-                  onClick={() => setShowFinderModal(true)} 
+                <button
+                  onClick={() => setShowFinderModal(true)}
                   className="btn btn-success"
                 >
                   🤝 ¡Lo encontré! / Reportar Localización
                 </button>
               </div>
             )}
-            
+
             <button className="btn btn-secondary" style={{ marginTop: '12px' }} onClick={() => setSelectedRecord(null)}>
               Cerrar Ficha
             </button>
@@ -863,23 +863,23 @@ export default function App() {
       {showReportModal && (
         <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            
+
             {/* Cabecera del Modal con Pestañas de Formulario */}
             <div className="modal-header" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'stretch', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 className="modal-title" style={{ fontSize: '16px' }}>Nuevo Reporte de Búsqueda</h3>
                 <button className="modal-close" onClick={() => setShowReportModal(false)}>×</button>
               </div>
-              
+
               <div className="filter-tabs" style={{ margin: 0, justifyContent: 'center', gap: '8px' }}>
-                <span 
+                <span
                   className={`filter-pill ${reportFormTab === 'person' ? 'active-red' : ''}`}
                   onClick={() => setReportFormTab('person')}
                   style={{ cursor: 'pointer' }}
                 >
                   👤 Persona
                 </span>
-                <span 
+                <span
                   className={`filter-pill ${reportFormTab === 'pet' ? 'active-red' : ''}`}
                   onClick={() => setReportFormTab('pet')}
                   style={{ cursor: 'pointer' }}
@@ -893,34 +893,34 @@ export default function App() {
               <form onSubmit={handlePersonSubmit}>
                 <div className="form-group">
                   <label className="form-label">Nombre Completo *</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
+                  <input
+                    type="text"
+                    className="input-field"
                     placeholder="Ej: Juan Vicente Pérez"
                     required
                     value={personForm.nombre}
-                    onChange={(e) => setPersonForm({...personForm, nombre: e.target.value})}
+                    onChange={(e) => setPersonForm({ ...personForm, nombre: e.target.value })}
                   />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label">Edad Aproximada</label>
-                    <input 
-                      type="number" 
-                      className="input-field" 
+                    <input
+                      type="number"
+                      className="input-field"
                       placeholder="Ej: 34"
                       value={personForm.edad}
-                      onChange={(e) => setPersonForm({...personForm, edad: e.target.value})}
+                      onChange={(e) => setPersonForm({ ...personForm, edad: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Género</label>
-                    <select 
-                      className="select-field" 
+                    <select
+                      className="select-field"
                       style={{ width: '100%' }}
                       value={personForm.genero}
-                      onChange={(e) => setPersonForm({...personForm, genero: e.target.value})}
+                      onChange={(e) => setPersonForm({ ...personForm, genero: e.target.value })}
                     >
                       <option value="Masculino">Masculino</option>
                       <option value="Femenino">Femenino</option>
@@ -931,11 +931,11 @@ export default function App() {
 
                 <div className="form-group">
                   <label className="form-label">Estado *</label>
-                  <select 
-                    className="select-field" 
+                  <select
+                    className="select-field"
                     style={{ width: '100%' }}
                     value={personForm.estado}
-                    onChange={(e) => setPersonForm({...personForm, estado: e.target.value})}
+                    onChange={(e) => setPersonForm({ ...personForm, estado: e.target.value })}
                   >
                     <option value="">Selecciona un Estado...</option>
                     {VENEZUELAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -945,47 +945,47 @@ export default function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label">Municipio *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Girardot"
                       required
                       value={personForm.municipio}
-                      onChange={(e) => setPersonForm({...personForm, municipio: e.target.value})}
+                      onChange={(e) => setPersonForm({ ...personForm, municipio: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Sector / Lugar Visto *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Av. Las Delicias"
                       required
                       value={personForm.sector}
-                      onChange={(e) => setPersonForm({...personForm, sector: e.target.value})}
+                      onChange={(e) => setPersonForm({ ...personForm, sector: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Fecha y Hora Último Avistamiento</label>
-                  <input 
-                    type="datetime-local" 
-                    className="input-field" 
+                  <input
+                    type="datetime-local"
+                    className="input-field"
                     value={personForm.ultimaVez}
-                    onChange={(e) => setPersonForm({...personForm, ultimaVez: e.target.value})}
+                    onChange={(e) => setPersonForm({ ...personForm, ultimaVez: e.target.value })}
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Características / Ropa que vestía *</label>
-                  <textarea 
-                    className="input-field" 
+                  <textarea
+                    className="input-field"
                     style={{ height: '70px', resize: 'none' }}
                     placeholder="Ej: Suéter rojo, cicatriz en mano, estatura 1.70m..."
                     required
                     value={personForm.señas}
-                    onChange={(e) => setPersonForm({...personForm, señas: e.target.value})}
+                    onChange={(e) => setPersonForm({ ...personForm, señas: e.target.value })}
                   />
                 </div>
 
@@ -998,50 +998,50 @@ export default function App() {
                       <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>📷 Toca para subir foto</span>
                     )}
                   </div>
-                  <input 
-                    type="file" 
-                    id="person-photo-input" 
-                    accept="image/*" 
-                    style={{ display: 'none' }} 
+                  <input
+                    type="file"
+                    id="person-photo-input"
+                    accept="image/*"
+                    style={{ display: 'none' }}
                     onChange={(e) => handlePhotoChange(e, 'person')}
                   />
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', marginTop: '16px' }}>
                   <h4 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>Datos de Contacto del Reportante (Familiar)</h4>
-                  
+
                   <div className="form-group">
                     <label className="form-label">Nombre del Contacto *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Clara Pérez (Esposa)"
                       required
                       value={personForm.reportanteNombre}
-                      onChange={(e) => setPersonForm({...personForm, reportanteNombre: e.target.value})}
+                      onChange={(e) => setPersonForm({ ...personForm, reportanteNombre: e.target.value })}
                     />
                   </div>
 
                   <div className="form-group">
                     <label className="form-label">Teléfono / WhatsApp *</label>
-                    <input 
-                      type="tel" 
-                      className="input-field" 
+                    <input
+                      type="tel"
+                      className="input-field"
                       placeholder="Ej: +58 412-1234567"
                       required
                       value={personForm.reportanteTelefono}
-                      onChange={(e) => setPersonForm({...personForm, reportanteTelefono: e.target.value})}
+                      onChange={(e) => setPersonForm({ ...personForm, reportanteTelefono: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div style={{ marginTop: '24px' }}>
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
                     disabled={!isPersonFormValid}
-                    style={{ 
-                      width: '100%', 
+                    style={{
+                      width: '100%',
                       backgroundColor: isPersonFormValid ? '#e03131' : '#cbd5e1',
                       color: isPersonFormValid ? '#ffffff' : '#64748b',
                       cursor: isPersonFormValid ? 'pointer' : 'not-allowed',
@@ -1057,22 +1057,22 @@ export default function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label">Nombre Mascota *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Toby"
                       required
                       value={petForm.nombre}
-                      onChange={(e) => setPetForm({...petForm, nombre: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, nombre: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Especie</label>
-                    <select 
-                      className="select-field" 
+                    <select
+                      className="select-field"
                       style={{ width: '100%' }}
                       value={petForm.especie}
-                      onChange={(e) => setPetForm({...petForm, especie: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, especie: e.target.value })}
                     >
                       <option value="Perro">Perro</option>
                       <option value="Gato">Gato</option>
@@ -1084,45 +1084,45 @@ export default function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label">Raza / Tipo</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Poodle, Mestizo"
                       value={petForm.raza}
-                      onChange={(e) => setPetForm({...petForm, raza: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, raza: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Color *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Blanco con manchas negras"
                       required
                       value={petForm.color}
-                      onChange={(e) => setPetForm({...petForm, color: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, color: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">¿Lleva collar?</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
+                  <input
+                    type="text"
+                    className="input-field"
                     placeholder="Ej: Sí, collar verde sin placa"
                     value={petForm.collar}
-                    onChange={(e) => setPetForm({...petForm, collar: e.target.value})}
+                    onChange={(e) => setPetForm({ ...petForm, collar: e.target.value })}
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Estado *</label>
-                  <select 
-                    className="select-field" 
+                  <select
+                    className="select-field"
                     style={{ width: '100%' }}
                     value={petForm.estado}
-                    onChange={(e) => setPetForm({...petForm, estado: e.target.value})}
+                    onChange={(e) => setPetForm({ ...petForm, estado: e.target.value })}
                   >
                     <option value="">Selecciona un Estado...</option>
                     {VENEZUELAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -1132,36 +1132,36 @@ export default function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div className="form-group">
                     <label className="form-label">Municipio *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Chacao"
                       required
                       value={petForm.municipio}
-                      onChange={(e) => setPetForm({...petForm, municipio: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, municipio: e.target.value })}
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Sector / Zona extravío *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Altamira Sur"
                       required
                       value={petForm.sector}
-                      onChange={(e) => setPetForm({...petForm, sector: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, sector: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Detalles / Señas particulares</label>
-                  <textarea 
-                    className="input-field" 
+                  <textarea
+                    className="input-field"
                     style={{ height: '70px', resize: 'none' }}
                     placeholder="Ej: Rabo corto, muy temeroso, responde al nombre de Toby..."
                     value={petForm.señas}
-                    onChange={(e) => setPetForm({...petForm, señas: e.target.value})}
+                    onChange={(e) => setPetForm({ ...petForm, señas: e.target.value })}
                   />
                 </div>
 
@@ -1174,50 +1174,50 @@ export default function App() {
                       <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>📷 Toca para subir foto</span>
                     )}
                   </div>
-                  <input 
-                    type="file" 
-                    id="pet-photo-input" 
-                    accept="image/*" 
-                    style={{ display: 'none' }} 
+                  <input
+                    type="file"
+                    id="pet-photo-input"
+                    accept="image/*"
+                    style={{ display: 'none' }}
                     onChange={(e) => handlePhotoChange(e, 'pet')}
                   />
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', marginTop: '16px' }}>
                   <h4 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>Datos de Contacto del Dueño</h4>
-                  
+
                   <div className="form-group">
                     <label className="form-label">Nombre Dueño *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       placeholder="Ej: Pedro Salazar"
                       required
                       value={petForm.contactoNombre}
-                      onChange={(e) => setPetForm({...petForm, contactoNombre: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, contactoNombre: e.target.value })}
                     />
                   </div>
 
                   <div className="form-group">
                     <label className="form-label">Teléfono / WhatsApp *</label>
-                    <input 
-                      type="tel" 
-                      className="input-field" 
+                    <input
+                      type="tel"
+                      className="input-field"
                       placeholder="Ej: +58 424-7778899"
                       required
                       value={petForm.contactoTelefono}
-                      onChange={(e) => setPetForm({...petForm, contactoTelefono: e.target.value})}
+                      onChange={(e) => setPetForm({ ...petForm, contactoTelefono: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div style={{ marginTop: '24px' }}>
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
                     disabled={!isPetFormValid}
-                    style={{ 
-                      width: '100%', 
+                    style={{
+                      width: '100%',
                       backgroundColor: isPetFormValid ? '#e03131' : '#cbd5e1',
                       color: isPetFormValid ? '#ffffff' : '#64748b',
                       cursor: isPetFormValid ? 'pointer' : 'not-allowed',
@@ -1241,7 +1241,7 @@ export default function App() {
               <h3 className="modal-title">¿Encontraste a {selectedRecord.nombre}?</h3>
               <button className="modal-close" onClick={() => setShowFinderModal(false)}>×</button>
             </div>
-            
+
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', textAlign: 'left' }}>
               Por favor ingresa tus datos de contacto. Esto permitirá que sus familiares se comuniquen contigo directamente para coordinar el reencuentro.
             </p>
@@ -1249,57 +1249,57 @@ export default function App() {
             <form onSubmit={handleFinderSubmit}>
               <div className="form-group">
                 <label className="form-label">Tu Nombre o Nombre de Institución *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
+                <input
+                  type="text"
+                  className="input-field"
                   placeholder="Ej: Brigada de Rescate Aragua / Vecino Juan Pérez"
                   required
                   value={finderForm.nombre}
-                  onChange={(e) => setFinderForm({...finderForm, nombre: e.target.value})}
+                  onChange={(e) => setFinderForm({ ...finderForm, nombre: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">Teléfono / WhatsApp de Contacto *</label>
-                <input 
-                  type="tel" 
-                  className="input-field" 
+                <input
+                  type="tel"
+                  className="input-field"
                   placeholder="Ej: +58 412-1234567"
                   required
                   value={finderForm.telefono}
-                  onChange={(e) => setFinderForm({...finderForm, telefono: e.target.value})}
+                  onChange={(e) => setFinderForm({ ...finderForm, telefono: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">¿Dónde se encuentra actualmente? *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
+                <input
+                  type="text"
+                  className="input-field"
                   placeholder="Ej: Refugio Escuela Básica Ribas / Resguardado en mi casa"
                   required
                   value={finderForm.ubicacion}
-                  onChange={(e) => setFinderForm({...finderForm, ubicacion: e.target.value})}
+                  onChange={(e) => setFinderForm({ ...finderForm, ubicacion: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">Notas sobre su estado físico o de salud</label>
-                <textarea 
-                  className="input-field" 
+                <textarea
+                  className="input-field"
                   style={{ height: '70px', resize: 'none' }}
                   placeholder="Ej: Sano y salvo, con fatiga pero comiendo bien, bajo atención paramédica..."
                   value={finderForm.notas}
-                  onChange={(e) => setFinderForm({...finderForm, notas: e.target.value})}
+                  onChange={(e) => setFinderForm({ ...finderForm, notas: e.target.value })}
                 />
               </div>
 
               <div style={{ marginTop: '24px' }}>
-                <button 
-                  type="submit" 
-                  className="btn btn-success" 
+                <button
+                  type="submit"
+                  className="btn btn-success"
                   disabled={!isFinderFormValid}
-                  style={{ 
+                  style={{
                     width: '100%',
                     backgroundColor: isFinderFormValid ? 'var(--color-success)' : '#cbd5e1',
                     color: isFinderFormValid ? '#ffffff' : '#64748b',
@@ -1316,8 +1316,8 @@ export default function App() {
       )}
 
       {/* Botón Flotante de Acción (FAB) Estilo Cruz Roja (Siempre visible en todas las vistas) */}
-      <button 
-        className="fab" 
+      <button
+        className="fab"
         onClick={() => {
           // Auto-detectar pestaña activa para pre-seleccionar el formulario adecuado
           if (activeTab === 'mascotas') {
