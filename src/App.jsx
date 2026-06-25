@@ -1032,175 +1032,67 @@ export default function App() {
       </main>
 
       {/* --- TAB BAR INFERIOR --- */}
-      <nav className="app-tabbar">
+      <nav className="app-tabbar" style={{ overflow: 'visible' }}>
         {/* Inicio */}
-        <button 
-          className={`tab-item ${activeTab === 'inicio' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('inicio'); setSearchQuery(''); }}
-          style={activeTab === 'inicio' ? { color: 'var(--color-unicef)' } : {}}
-        >
-          <span 
-            className="tab-icon" 
-            style={activeTab === 'inicio' ? {
-              backgroundColor: 'var(--color-unicef-light)',
-              color: 'var(--color-unicef)',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0, 173, 239, 0.15)',
-              transition: 'all 0.3s ease'
-            } : {
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            🏠
-          </span>
-          <span style={activeTab === 'inicio' ? { fontWeight: '800' } : {}}>Inicio</span>
+        <button className={`tab-item ${activeTab === 'inicio' ? 'active' : ''}`} onClick={() => { setActiveTab('inicio'); setSearchQuery(''); }}>
+          <span className="tab-icon">🏠</span>
+          <span>Inicio</span>
         </button>
 
         {/* Personas */}
-        <button 
-          className={`tab-item ${activeTab === 'personas' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('personas'); setSearchQuery(''); }}
-          style={activeTab === 'personas' ? { color: 'var(--color-unicef)' } : {}}
-        >
-          <span 
-            className="tab-icon" 
-            style={activeTab === 'personas' ? {
-              backgroundColor: 'var(--color-unicef-light)',
-              color: 'var(--color-unicef)',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0, 173, 239, 0.15)',
-              transition: 'all 0.3s ease'
-            } : {
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            👥
-          </span>
-          <span style={activeTab === 'personas' ? { fontWeight: '800' } : {}}>Personas</span>
+        <button className={`tab-item ${activeTab === 'personas' ? 'active' : ''}`} onClick={() => { setActiveTab('personas'); setSearchQuery(''); }}>
+          <span className="tab-icon">👥</span>
+          <span>Personas</span>
         </button>
 
-        {/* Acopio */}
+        {/* Acopio - Botón Prominente Destacado */}
         <button 
           className={`tab-item ${activeTab === 'acopio' ? 'active' : ''}`} 
           onClick={() => { setActiveTab('acopio'); setSearchQuery(''); }}
-          style={activeTab === 'acopio' ? { color: 'var(--color-success)' } : {}}
+          style={{ position: 'relative', overflow: 'visible' }}
         >
-          <span 
-            className="tab-icon" 
-            style={activeTab === 'acopio' ? {
-              backgroundColor: 'var(--color-success-light)',
-              color: 'var(--color-success)',
-              width: '36px',
-              height: '36px',
+          <div 
+            style={{
+              backgroundColor: activeTab === 'acopio' ? 'var(--color-success)' : '#c2f2d9',
+              color: activeTab === 'acopio' ? '#ffffff' : 'var(--color-success)',
+              width: '42px',
+              height: '42px',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(30, 184, 120, 0.2)',
-              transition: 'all 0.3s ease'
-            } : {
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease'
+              boxShadow: activeTab === 'acopio' 
+                ? '0 4px 10px rgba(30, 184, 120, 0.35)' 
+                : '0 2px 8px rgba(30, 184, 120, 0.25)',
+              transform: 'translateY(-14px)',
+              position: 'absolute',
+              top: '2px',
+              border: '3px solid var(--bg-card)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              fontSize: '18px'
             }}
           >
             📦
+          </div>
+          <span style={{ 
+            marginTop: '28px',
+            color: 'var(--color-success)',
+            fontWeight: activeTab === 'acopio' ? '800' : '700'
+          }}>
+            Acopio
           </span>
-          <span style={activeTab === 'acopio' ? { fontWeight: '800' } : {}}>Acopio</span>
         </button>
 
         {/* Mascotas */}
-        <button 
-          className={`tab-item ${activeTab === 'mascotas' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('mascotas'); setSearchQuery(''); }}
-          style={activeTab === 'mascotas' ? { color: 'var(--color-warning)' } : {}}
-        >
-          <span 
-            className="tab-icon" 
-            style={activeTab === 'mascotas' ? {
-              backgroundColor: 'var(--color-warning-light)',
-              color: 'var(--color-warning)',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(242, 153, 74, 0.2)',
-              transition: 'all 0.3s ease'
-            } : {
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            🐾
-          </span>
-          <span style={activeTab === 'mascotas' ? { fontWeight: '800' } : {}}>Mascotas</span>
+        <button className={`tab-item ${activeTab === 'mascotas' ? 'active' : ''}`} onClick={() => { setActiveTab('mascotas'); setSearchQuery(''); }}>
+          <span className="tab-icon">🐾</span>
+          <span>Mascotas</span>
         </button>
 
         {/* Emergencias */}
-        <button 
-          className={`tab-item ${activeTab === 'emergencias' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('emergencias'); setSearchQuery(''); }}
-          style={activeTab === 'emergencias' ? { color: 'var(--color-danger)' } : {}}
-        >
-          <span 
-            className="tab-icon" 
-            style={activeTab === 'emergencias' ? {
-              backgroundColor: 'var(--color-danger-light)',
-              color: 'var(--color-danger)',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(217, 65, 65, 0.2)',
-              transition: 'all 0.3s ease'
-            } : {
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            📞
-          </span>
-          <span style={activeTab === 'emergencias' ? { fontWeight: '800' } : {}}>Emergencias</span>
+        <button className={`tab-item ${activeTab === 'emergencias' ? 'active' : ''}`} onClick={() => { setActiveTab('emergencias'); setSearchQuery(''); }}>
+          <span className="tab-icon">📞</span>
+          <span>Emergencias</span>
         </button>
       </nav>
 
