@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   getPersons,
   addPerson,
@@ -75,6 +75,10 @@ export default function App() {
   const [newNeedItem, setNewNeedItem] = useState('');
   const [newNeedPriority, setNewNeedPriority] = useState('alta');
 
+  // Modal de Mapa Interactivo
+  const [showMapModal, setShowMapModal] = useState(false);
+  const mapRef = useRef(null);
+
   // Cargar datos
   const loadData = async () => {
     const fetchedPersons = await getPersons();
@@ -91,6 +95,103 @@ export default function App() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Inicializar mapa interactivo para seleccionar ubicación
+  useEffect(() => {
+    if (!showMapModal) {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (!window.L) return;
+
+      const defaultLat = 10.5000;
+      const defaultLng = -66.9036;
+      let initialLat = defaultLat;
+      let initialLng = defaultLng;
+
+      // Intentar extraer coordenadas si ya hay un enlace de Google Maps
+      if (centerForm.googleMapsUrl) {
+        const match = centerForm.googleMapsUrl.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (match) {
+          initialLat = parseFloat(match[1]);
+          initialLng = parseFloat(match[2]);
+        }
+      }
+
+      const map = window.L.map('select-map').setView([initialLat, initialLng], 14);
+      mapRef.current = map;
+
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      // Icono marcador personalizado (evita bugs de rutas de imágenes en CDNs de Leaflet)
+      const markerIcon = window.L.divIcon({
+        className: 'custom-map-marker',
+        html: `<div style="
+          background-color: #d94141; 
+          width: 18px; 
+          height: 18px; 
+          border-radius: 50%; 
+          border: 3px solid #ffffff; 
+          box-shadow: 0 0 8px rgba(0,0,0,0.5);
+          position: absolute;
+          top: -9px;
+          left: -9px;
+        "></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+
+      const marker = window.L.marker([initialLat, initialLng], { 
+        icon: markerIcon, 
+        draggable: true 
+      }).addTo(map);
+
+      // Actualizar marcador al hacer clic en el mapa
+      map.on('click', (e) => {
+        marker.setLatLng(e.latlng);
+      });
+
+      // Función para centrar en GPS
+      window.centerMapOnGPS = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              map.setView([latitude, longitude], 15);
+              marker.setLatLng([latitude, longitude]);
+            },
+            (err) => {
+              alert("No se pudo obtener la geolocalización: " + err.message);
+            }
+          );
+        } else {
+          alert("Tu navegador no soporta geolocalización.");
+        }
+      };
+
+      // Función para guardar ubicación seleccionada
+      window.saveSelectedMapLocation = () => {
+        const finalPos = marker.getLatLng();
+        setCenterForm(prev => ({
+          ...prev,
+          googleMapsUrl: `https://www.google.com/maps?q=${finalPos.lat.toFixed(6)},${finalPos.lng.toFixed(6)}`
+        }));
+        setShowMapModal(false);
+      };
+
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [showMapModal]);
 
   // Función para normalizar texto (quitar acentos)
   const normalizeText = (text) => {
@@ -1818,12 +1919,12 @@ export default function App() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Enlace Google Maps (Opcional)</label>
+                <label className="form-label">Ubicación Geográfica (Opcional)</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input
                     type="url"
                     className="input-field"
-                    placeholder="Ej: https://maps.google.com/..."
+                    placeholder="Enlace o coordenadas de ubicación..."
                     value={centerForm.googleMapsUrl}
                     onChange={(e) => setCenterForm({ ...centerForm, googleMapsUrl: e.target.value })}
                     style={{ flex: 1 }}
@@ -1831,10 +1932,10 @@ export default function App() {
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={handleGetLocation}
-                    style={{ width: 'auto', minHeight: '48px', padding: '0 16px', fontSize: '13px', display: 'flex', gap: '4px', whiteSpace: 'nowrap' }}
+                    onClick={() => setShowMapModal(true)}
+                    style={{ width: 'auto', minHeight: '48px', padding: '0 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', backgroundColor: 'var(--color-unicef-light)', color: 'var(--color-unicef)', border: '1px solid var(--color-unicef)' }}
                   >
-                    📍 Mi Ubicación
+                    📍 Seleccionar en Mapa
                   </button>
                 </div>
               </div>
@@ -1929,6 +2030,55 @@ export default function App() {
         <span className="fab-icon">✚</span>
         <span>Reportar Caso</span>
       </button>
+
+      {/* Modal de Mapa Interactivo */}
+      {showMapModal && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => setShowMapModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '500px', width: '90%', padding: '20px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ padding: '0 0 12px 0', borderBottom: '1px solid var(--color-border)' }}>
+              <h3 className="modal-title" style={{ fontSize: '16px', fontWeight: '700' }}>Seleccionar en el Mapa</h3>
+              <button className="modal-close" onClick={() => setShowMapModal(false)}>×</button>
+            </div>
+            <div className="modal-body" style={{ padding: '16px 0 0 0' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
+                📍 Haz clic o arrastra el marcador rojo para señalar la ubicación del centro de acopio.
+              </p>
+              
+              {/* Contenedor del Mapa */}
+              <div 
+                id="select-map" 
+                style={{ 
+                  height: '320px', 
+                  width: '100%', 
+                  backgroundColor: '#e9ecef',
+                  borderRadius: '8px',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)',
+                  border: '1px solid var(--color-border)',
+                  position: 'relative'
+                }}
+              ></div>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', gap: '8px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => window.centerMapOnGPS && window.centerMapOnGPS()}
+                style={{ flex: 1, minHeight: '40px', fontSize: '13px' }}
+              >
+                🛰️ Centrar en mi GPS
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={() => window.saveSelectedMapLocation && window.saveSelectedMapLocation()}
+                style={{ flex: 1, minHeight: '40px', fontSize: '13px', backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)' }}
+              >
+                Confirmar Ubicación
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
 
   );
