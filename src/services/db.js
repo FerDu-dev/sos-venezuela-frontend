@@ -97,11 +97,25 @@ export async function addPerson(personData) {
     try {
       // Subir foto a storage si es base64 o blob
       if (personData.fotoFile && storage) {
-        const photoRef = ref(storage, `personas/${Date.now()}_${personData.nombre.replace(/\s+/g, "_")}.webp`);
-        await uploadBytes(photoRef, personData.fotoFile);
-        newPerson.foto = await getDownloadURL(photoRef);
-        delete newPerson.fotoFile; // Eliminar binario de la data
+        try {
+          const photoRef = ref(storage, `personas/${Date.now()}_${personData.nombre.replace(/\s+/g, "_")}.webp`);
+          await uploadBytes(photoRef, personData.fotoFile);
+          newPerson.foto = await getDownloadURL(photoRef);
+        } catch (storageErr) {
+          console.error("Storage no activo o error de plan. Usando fallback de foto en base64.", storageErr);
+          // Si falla, guardar base64 directo en Firestore (las fotos vienen ya muy comprimidas y pequeñas)
+          if (personData.fotoBase64) {
+            newPerson.foto = personData.fotoBase64;
+          }
+        }
+      } else if (personData.fotoBase64) {
+        newPerson.foto = personData.fotoBase64;
       }
+      
+      // Eliminar binarios para evitar problemas al escribir en Firestore
+      delete newPerson.fotoFile;
+      delete newPerson.fotoBase64;
+
       const docRef = await addDoc(collection(db, "personas_desaparecidas"), newPerson);
       return { id: docRef.id, ...newPerson };
     } catch (e) {
@@ -206,11 +220,23 @@ export async function addPet(petData) {
   if (isFirebaseConfigured && db) {
     try {
       if (petData.fotoFile && storage) {
-        const photoRef = ref(storage, `mascotas/${Date.now()}_${petData.nombre.replace(/\s+/g, "_")}.webp`);
-        await uploadBytes(photoRef, petData.fotoFile);
-        newPet.foto = await getDownloadURL(photoRef);
-        delete newPet.fotoFile;
+        try {
+          const photoRef = ref(storage, `mascotas/${Date.now()}_${petData.nombre.replace(/\s+/g, "_")}.webp`);
+          await uploadBytes(photoRef, petData.fotoFile);
+          newPet.foto = await getDownloadURL(photoRef);
+        } catch (storageErr) {
+          console.error("Storage no activo o error de plan. Usando fallback de foto en base64.", storageErr);
+          if (petData.fotoBase64) {
+            newPet.foto = petData.fotoBase64;
+          }
+        }
+      } else if (petData.fotoBase64) {
+        newPet.foto = petData.fotoBase64;
       }
+
+      delete newPet.fotoFile;
+      delete newPet.fotoBase64;
+
       const docRef = await addDoc(collection(db, "mascotas_desaparecidas"), newPet);
       return { id: docRef.id, ...newPet };
     } catch (e) {
