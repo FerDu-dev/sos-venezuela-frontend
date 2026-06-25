@@ -534,54 +534,6 @@ export default function App() {
                 <p style={{ textAlign: 'center', padding: '16px' }}>Cargando métricas...</p>
               )}
 
-              {/* Contactos de Emergencia Rápidos */}
-              <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-danger-light)' }}>
-                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🚨 Contactos de Emergencia Rápidos
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>VEN 911</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
-                    </div>
-                    <a href="tel:911" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a VEN 911">
-                      📞
-                    </a>
-                  </div>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Bomberos</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Caracas</span>
-                    </div>
-                    <a href="tel:02125454545" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Bomberos">
-                      📞
-                    </a>
-                  </div>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Protección Civil</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
-                    </div>
-                    <a href="tel:02126311543" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a PC">
-                      📞
-                    </a>
-                  </div>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Cruz Roja</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
-                    </div>
-                    <a href="tel:02125782187" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Cruz Roja">
-                      📞
-                    </a>
-                  </div>
-                </div>
-                <button onClick={() => setActiveTab('emergencias')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '32px', height: '32px', padding: '4px', fontSize: '11px' }}>
-                  Ver todos los números por estado →
-                </button>
-              </div>
-
               {/* Centros de Acopio Activos Recientes */}
               <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-success-light, #ebfbee)' }}>
                 <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-success, #2b8a3e)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -633,6 +585,54 @@ export default function App() {
                 </div>
                 <button onClick={() => setActiveTab('acopio')} className="btn btn-secondary" style={{ marginTop: '16px', minHeight: '40px', padding: '8px' }}>
                   Ver todos los centros de acopio ({centers.length}) →
+                </button>
+              </div>
+
+              {/* Contactos de Emergencia Rápidos */}
+              <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-danger-light)' }}>
+                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🚨 Contactos de Emergencia Rápidos
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>VEN 911</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                    </div>
+                    <a href="tel:911" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a VEN 911">
+                      📞
+                    </a>
+                  </div>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Bomberos</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Caracas</span>
+                    </div>
+                    <a href="tel:02125454545" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Bomberos">
+                      📞
+                    </a>
+                  </div>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Protección Civil</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                    </div>
+                    <a href="tel:02126311543" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a PC">
+                      📞
+                    </a>
+                  </div>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Cruz Roja</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                    </div>
+                    <a href="tel:02125782187" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Cruz Roja">
+                      📞
+                    </a>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab('emergencias')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '32px', height: '32px', padding: '4px', fontSize: '11px' }}>
+                  Ver todos los números por estado →
                 </button>
               </div>
 
