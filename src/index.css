@@ -988,5 +988,37 @@ body {
   background-color: rgba(0, 0, 0, 0.08);
 }
 
+/* Clases para botones dinámicos del Header y FAB */
+.btn-header-unicef {
+  background-color: var(--color-unicef) !important;
+  border-color: var(--color-unicef) !important;
+}
+.btn-header-unicef:hover {
+  background-color: var(--color-unicef-dark) !important;
+}
+.btn-header-green {
+  background-color: var(--color-success) !important;
+  border-color: var(--color-success) !important;
+}
+.btn-header-green:hover {
+  background-color: #1e7e34 !important;
+}
+
+.fab-unicef {
+  background-color: var(--color-unicef) !important;
+  box-shadow: 0 6px 20px rgba(0, 173, 239, 0.35) !important;
+}
+.fab-unicef:active {
+  background-color: var(--color-unicef-dark) !important;
+}
+.fab-green {
+  background-color: var(--color-success) !important;
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35) !important;
+}
+.fab-green:active {
+  background-color: #1e7e34 !important;
+}
+
+
 
 

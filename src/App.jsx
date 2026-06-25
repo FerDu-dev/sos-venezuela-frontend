@@ -252,6 +252,26 @@ export default function App() {
     alert("Centro de acopio registrado con éxito.");
   };
 
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Tu navegador no soporta geolocalización.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setCenterForm(prev => ({
+          ...prev,
+          googleMapsUrl: `https://www.google.com/maps?q=${latitude},${longitude}`
+        }));
+        alert("📍 Ubicación obtenida correctamente.");
+      },
+      (error) => {
+        alert("No se pudo obtener la ubicación: " + error.message + ". Por favor ingresa el enlace manualmente.");
+      }
+    );
+  };
+
   const handleStatusChange = async (recordId, newStatus, type, finderData = null) => {
     if (type === 'person') {
       await updatePersonStatus(recordId, newStatus, finderData);
@@ -382,17 +402,26 @@ export default function App() {
 
         <button
           onClick={() => {
-            if (activeTab === 'mascotas') {
-              setReportFormTab('pet');
+            if (activeTab === 'acopio') {
+              setShowCenterModal(true);
             } else {
-              setReportFormTab('person');
+              setActiveTab('acopio');
+              setSearchQuery('');
             }
-            setShowReportModal(true);
           }}
-          className="btn-report-header"
+          className={`btn-report-header ${activeTab === 'acopio' ? 'btn-header-green' : 'btn-header-unicef'}`}
         >
-          <span className="fab-icon" style={{ marginRight: '4px' }}>✚</span>
-          <span>Reportar Caso</span>
+          {activeTab === 'acopio' ? (
+            <>
+              <span className="fab-icon" style={{ marginRight: '4px' }}>✚</span>
+              <span>Registrar Centro</span>
+            </>
+          ) : (
+            <>
+              <span className="fab-icon" style={{ marginRight: '4px' }}>📦</span>
+              <span>Ver Acopios</span>
+            </>
+          )}
         </button>
       </header>
 
@@ -414,7 +443,11 @@ export default function App() {
               <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700' }}>Panel de Monitoreo en Tiempo Real</h3>
 
               {metrics ? (
-                <div className="dashboard-metrics">
+                <div className="dashboard-metrics" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                  <div className="metric-card" style={{ background: 'var(--color-success-light, #ebfbee)', borderColor: 'var(--color-success, #12b886)' }}>
+                    <div className="metric-value success" style={{ color: 'var(--color-success, #2b8a3e)' }}>{metrics.centros ? metrics.centros.total : 0}</div>
+                    <div className="metric-label" style={{ fontWeight: '700', color: 'var(--color-success, #2b8a3e)' }}>Centros de Acopio Activos</div>
+                  </div>
                   <div className="metric-card">
                     <div className="metric-value danger">{metrics.personas.desaparecidas}</div>
                     <div className="metric-label">Personas Desaparecidas</div>
@@ -437,6 +470,61 @@ export default function App() {
                 <p style={{ textAlign: 'center', padding: '16px' }}>Cargando métricas...</p>
               )}
 
+              {/* Centros de Acopio Activos Recientes */}
+              <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-success-light, #ebfbee)' }}>
+                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-success, #2b8a3e)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📦 Centros de Acopio Activos Recientes
+                </h4>
+                <div className="records-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                  {centers.slice(0, 3).map(c => (
+                    <div key={c.id} className="card" style={{ border: '1px solid var(--color-border)', margin: 0, padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-app)' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <h5 style={{ fontSize: '13px', fontWeight: '700', margin: 0 }}>{c.nombre}</h5>
+                          <span className="record-badge" style={{
+                            fontSize: '9px',
+                            padding: '2px 8px',
+                            backgroundColor: 'var(--color-success-light)',
+                            color: 'var(--color-success)'
+                          }}>Activo</span>
+                        </div>
+                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 6px 0', textAlign: 'left' }}>
+                          📍 {c.direccion} ({c.estado})
+                        </p>
+                        <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: '0 0 10px 0', textAlign: 'left' }}>
+                          📞 {c.contacto} | 🕒 {c.horario || 'No especificado'}
+                        </p>
+                      </div>
+                      <div>
+                        <h6 style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px 0', fontWeight: '700', textAlign: 'left' }}>Insumos Críticos:</h6>
+                        <div className="supplies-grid" style={{ gap: '4px', justifyContent: 'flex-start' }}>
+                          {c.necesidades.slice(0, 3).map((n, idx) => (
+                            <div key={idx} className={`supply-item supply-${n.prioridad}`} style={{ padding: '2px 8px', fontSize: '9px' }}>
+                              <span>{n.item}</span>
+                            </div>
+                          ))}
+                          {c.necesidades.length > 3 && (
+                            <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>+{c.necesidades.length - 3} más</span>
+                          )}
+                          {c.necesidades.length === 0 && (
+                            <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin necesidades urgentes</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {centers.length === 0 && (
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', padding: '16px', gridColumn: '1 / -1' }}>
+                      No hay centros de acopio registrados aún.
+                    </p>
+                  )}
+                </div>
+                <button onClick={() => setActiveTab('acopio')} className="btn btn-secondary" style={{ marginTop: '16px', minHeight: '40px', padding: '8px' }}>
+                  Ver todos los centros de acopio ({centers.length}) →
+                </button>
+              </div>
+
+              {/* Registro secundario de personas */}
               <div className="card">
                 <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700' }}>Últimas personas reportadas</h4>
                 <div className="records-list">
@@ -463,7 +551,15 @@ export default function App() {
             </div>
 
             <aside className="dashboard-sidebar">
-              <div className="card" style={{ background: 'var(--color-danger-light)', borderColor: 'var(--color-danger)', textAlign: 'center', padding: '20px' }}>
+              <div className="card" style={{ background: 'var(--color-success-light, #ebfbee)', borderColor: 'var(--color-success, #12b886)', textAlign: 'center', padding: '20px', marginBottom: '16px' }}>
+                <h4 style={{ color: 'var(--color-success, #2b8a3e)', marginBottom: '8px', fontSize: '15px' }}>¿Conoces un Centro de Acopio activo?</h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra un punto de recolección de donaciones para indicar qué insumos necesitan.</p>
+                <button onClick={() => setShowCenterModal(true)} className="btn btn-success">
+                  ➕ Registrar Centro de Acopio
+                </button>
+              </div>
+
+              <div className="card" style={{ background: 'var(--color-danger-light)', borderColor: 'var(--color-danger)', textAlign: 'center', padding: '20px', marginBottom: '16px' }}>
                 <h4 style={{ color: 'var(--color-danger)', marginBottom: '8px', fontSize: '15px' }}>¿Tienes un familiar o amigo no localizado?</h4>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra sus datos en nuestro censo cívico. Voluntarios y brigadas usan esta base de datos.</p>
                 <button onClick={() => { setReportFormTab('person'); setShowReportModal(true); }} className="btn btn-primary">
@@ -1470,13 +1566,24 @@ export default function App() {
 
               <div className="form-group">
                 <label className="form-label">Enlace Google Maps (Opcional)</label>
-                <input
-                  type="url"
-                  className="input-field"
-                  placeholder="Ej: https://maps.google.com/..."
-                  value={centerForm.googleMapsUrl}
-                  onChange={(e) => setCenterForm({ ...centerForm, googleMapsUrl: e.target.value })}
-                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="url"
+                    className="input-field"
+                    placeholder="Ej: https://maps.google.com/..."
+                    value={centerForm.googleMapsUrl}
+                    onChange={(e) => setCenterForm({ ...centerForm, googleMapsUrl: e.target.value })}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleGetLocation}
+                    style={{ width: 'auto', minHeight: '48px', padding: '0 16px', fontSize: '13px', display: 'flex', gap: '4px', whiteSpace: 'nowrap' }}
+                  >
+                    📍 Mi Ubicación
+                  </button>
+                </div>
               </div>
 
               {/* Dynamic Needs Sub-form */}
@@ -1557,22 +1664,30 @@ export default function App() {
         </div>
       )}
 
-      {/* Botón Flotante de Acción (FAB) Estilo Cruz Roja (Siempre visible en todas las vistas) */}
+      {/* Botón Flotante de Acción (FAB) Dinámico (Siempre visible en todas las vistas en móvil) */}
       <button
-        className="fab"
+        className={`fab ${activeTab === 'acopio' ? 'fab-green' : 'fab-unicef'}`}
         onClick={() => {
-          // Auto-detectar pestaña activa para pre-seleccionar el formulario adecuado
-          if (activeTab === 'mascotas') {
-            setReportFormTab('pet');
+          if (activeTab === 'acopio') {
+            setShowCenterModal(true);
           } else {
-            setReportFormTab('person');
+            setActiveTab('acopio');
+            setSearchQuery('');
           }
-          setShowReportModal(true);
         }}
-        title="Reportar Desaparición"
+        title={activeTab === 'acopio' ? "Registrar Centro de Acopio" : "Ver Centros de Acopio"}
       >
-        <span className="fab-icon">✚</span>
-        <span>Reportar</span>
+        {activeTab === 'acopio' ? (
+          <>
+            <span className="fab-icon">✚</span>
+            <span>Registrar</span>
+          </>
+        ) : (
+          <>
+            <span className="fab-icon">📦</span>
+            <span>Ver Acopios</span>
+          </>
+        )}
       </button>
     </>
 

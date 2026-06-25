@@ -339,6 +339,7 @@ export async function getMetrics() {
   // Calculado dinámicamente a partir de la lista para mantenerlo simple y preciso
   const persons = await getPersons();
   const pets = await getPets();
+  const centers = await getCenters();
 
   const totalDesaparecidos = persons.filter(p => p.estatus === "Desaparecido").length;
   const totalLocalizados = persons.filter(p => p.estatus === "Localizado").length;
@@ -358,6 +359,9 @@ export async function getMetrics() {
       total: pets.length,
       desaparecidas: totalMascotasDesaparecidas,
       localizadas: totalMascotasLocalizadas
+    },
+    centros: {
+      total: centers.length
     }
   };
 }
