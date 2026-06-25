@@ -466,14 +466,14 @@ export default function App() {
               <div className="card" style={{ background: 'var(--color-danger-light)', borderColor: 'var(--color-danger)', textAlign: 'center', padding: '20px' }}>
                 <h4 style={{ color: 'var(--color-danger)', marginBottom: '8px', fontSize: '15px' }}>¿Tienes un familiar o amigo no localizado?</h4>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra sus datos en nuestro censo cívico. Voluntarios y brigadas usan esta base de datos.</p>
-                <button onClick={() => setShowPersonModal(true)} className="btn btn-primary">
+                <button onClick={() => { setReportFormTab('person'); setShowReportModal(true); }} className="btn btn-primary">
                   ➕ Registrar Persona Desaparecida
                 </button>
               </div>
 
               <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
                 <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>¿Perdiste una mascota durante el sismo?</h4>
-                <button onClick={() => setShowPetModal(true)} className="btn btn-secondary" style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}>
+                <button onClick={() => { setReportFormTab('pet'); setShowReportModal(true); }} className="btn btn-secondary" style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}>
                   🐾 Registrar Mascota Extraviada
                 </button>
               </div>
