@@ -24,9 +24,13 @@ if (isFirebaseConfigured) {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     db = getFirestore(app);
     storage = getStorage(app);
+    // Limitar los reintentos de Storage a 2 segundos para evitar que la UI se congele
+    storage.maxUploadRetryTime = 2000;
+    storage.maxOperationRetryTime = 2000;
     console.log("Firebase inicializado con éxito.");
   } catch (error) {
     console.error("Error inicializando Firebase. Usando base de datos simulada local.", error);
+    alert("Error de inicialización de Firebase: " + error.message);
   }
 }
 
@@ -120,6 +124,7 @@ export async function addPerson(personData) {
       return { id: docRef.id, ...newPerson };
     } catch (e) {
       console.error("Error escribiendo Firestore, guardando local", e);
+      alert("Error al registrar persona en Firestore: " + e.message);
       return addLocalPerson(newPerson);
     }
   } else {
@@ -241,6 +246,7 @@ export async function addPet(petData) {
       return { id: docRef.id, ...newPet };
     } catch (e) {
       console.error("Error escribiendo Firestore, guardando local", e);
+      alert("Error al registrar mascota en Firestore: " + e.message);
       return addLocalPet(newPet);
     }
   } else {
@@ -370,6 +376,7 @@ export async function addCenter(centerData) {
       return { id: docRef.id, ...newCenter };
     } catch (e) {
       console.error("Error escribiendo Firestore, guardando local", e);
+      alert("Error al registrar centro en Firestore: " + e.message);
       return addLocalCenter(newCenter);
     }
   } else {
