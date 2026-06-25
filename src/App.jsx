@@ -108,6 +108,70 @@ export default function App() {
     return (first + second).toUpperCase();
   };
 
+  // Extraer número de teléfono de una cadena de texto (para centros de acopio)
+  const extractPhoneNumber = (text) => {
+    if (!text) return null;
+    const match = text.match(/(?:\+58|58)?\s?0?(?:412|414|424|416|426|2\d{2})[-.\s]?\d{3}[-.\s]?\d{4}/) || text.match(/\+?\d[\d\s.-]{6,}\d/);
+    if (match) {
+      const clean = match[0].replace(/[^0-9+]/g, '');
+      let formatted = clean;
+      if (!formatted.startsWith('+') && !formatted.startsWith('58')) {
+        if (formatted.startsWith('0')) {
+          formatted = formatted.substring(1);
+        }
+        formatted = '58' + formatted;
+      } else if (formatted.startsWith('+')) {
+        formatted = formatted.substring(1);
+      }
+      return {
+        display: match[0].trim(),
+        value: formatted
+      };
+    }
+    return null;
+  };
+
+  // Obtener detalles de teléfono según el tipo de registro seleccionado
+  const getRecordPhoneDetails = () => {
+    if (!selectedRecord) return null;
+    if (recordType === 'person') {
+      const phone = selectedRecord.reportanteTelefono;
+      if (!phone) return null;
+      const cleanPhone = phone.replace(/[^0-9]/g, "");
+      let waPhone = cleanPhone;
+      if (!waPhone.startsWith('58') && (waPhone.startsWith('412') || waPhone.startsWith('414') || waPhone.startsWith('424') || waPhone.startsWith('416') || waPhone.startsWith('426'))) {
+        waPhone = '58' + waPhone;
+      }
+      return {
+        raw: phone,
+        callUrl: `tel:${phone}`,
+        waUrl: `https://wa.me/${waPhone}`
+      };
+    } else if (recordType === 'pet') {
+      const phone = selectedRecord.contactoTelefono;
+      if (!phone) return null;
+      const cleanPhone = phone.replace(/[^0-9]/g, "");
+      let waPhone = cleanPhone;
+      if (!waPhone.startsWith('58') && (waPhone.startsWith('412') || waPhone.startsWith('414') || waPhone.startsWith('424') || waPhone.startsWith('416') || waPhone.startsWith('426'))) {
+        waPhone = '58' + waPhone;
+      }
+      return {
+        raw: phone,
+        callUrl: `tel:${phone}`,
+        waUrl: `https://wa.me/${waPhone}`
+      };
+    } else if (recordType === 'center') {
+      const phoneInfo = extractPhoneNumber(selectedRecord.contacto);
+      if (!phoneInfo) return null;
+      return {
+        raw: phoneInfo.display,
+        callUrl: `tel:${phoneInfo.display}`,
+        waUrl: `https://wa.me/${phoneInfo.value}`
+      };
+    }
+    return null;
+  };
+
   // --- RENDERING DE AVATARS OFFLINE/PREMIUM ---
   const renderAvatar = (record, isPet = false) => {
     const photo = record.foto;
@@ -373,7 +437,7 @@ export default function App() {
       <header className="app-header">
         <div className="app-logo">
           <span className="logo-icon">🚨</span>
-          <span className="logo-text">Ayuda Venezuela</span>
+          <span className="logo-text">Centros Ayuda Venezuela</span>
         </div>
 
         {/* Navegación Desktop */}
@@ -470,6 +534,54 @@ export default function App() {
                 <p style={{ textAlign: 'center', padding: '16px' }}>Cargando métricas...</p>
               )}
 
+              {/* Contactos de Emergencia Rápidos */}
+              <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-danger-light)' }}>
+                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🚨 Contactos de Emergencia Rápidos
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>VEN 911</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                    </div>
+                    <a href="tel:911" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a VEN 911">
+                      📞
+                    </a>
+                  </div>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Bomberos</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Caracas</span>
+                    </div>
+                    <a href="tel:02125454545" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Bomberos">
+                      📞
+                    </a>
+                  </div>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Protección Civil</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                    </div>
+                    <a href="tel:02126311543" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a PC">
+                      📞
+                    </a>
+                  </div>
+                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Cruz Roja</h5>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                    </div>
+                    <a href="tel:02125782187" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Cruz Roja">
+                      📞
+                    </a>
+                  </div>
+                </div>
+                <button onClick={() => setActiveTab('emergencias')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '32px', height: '32px', padding: '4px', fontSize: '11px' }}>
+                  Ver todos los números por estado →
+                </button>
+              </div>
+
               {/* Centros de Acopio Activos Recientes */}
               <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-success-light, #ebfbee)' }}>
                 <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-success, #2b8a3e)', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -477,7 +589,7 @@ export default function App() {
                 </h4>
                 <div className="records-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
                   {centers.slice(0, 3).map(c => (
-                    <div key={c.id} className="card" style={{ border: '1px solid var(--color-border)', margin: 0, padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-app)' }}>
+                    <div key={c.id} className="card" onClick={() => { setSelectedRecord(c); setRecordType('center'); }} style={{ cursor: 'pointer', border: '1px solid var(--color-border)', margin: 0, padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-app)' }}>
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                           <h5 style={{ fontSize: '13px', fontWeight: '700', margin: 0 }}>{c.nombre}</h5>
@@ -724,7 +836,7 @@ export default function App() {
               <div className="records-list">
                 {filteredCenters.length > 0 ? (
                   filteredCenters.map(c => (
-                    <div key={c.id} className="card">
+                    <div key={c.id} className="card" onClick={() => { setSelectedRecord(c); setRecordType('center'); }} style={{ cursor: 'pointer' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{c.nombre}</h4>
                         <span className={`record-badge`} style={{
@@ -752,7 +864,7 @@ export default function App() {
                       </div>
 
                       <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                        <a href={c.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ flex: 1, minHeight: '40px', padding: '6px' }}>
+                        <a href={c.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" onClick={(e) => e.stopPropagation()} style={{ flex: 1, minHeight: '40px', padding: '6px' }}>
                           🗺️ Ver Ruta en Maps
                         </a>
                       </div>
@@ -932,92 +1044,179 @@ export default function App() {
 
       {/* --- MODAL DETALLE DE REGISTRO --- */}
       {selectedRecord && (
-        <div className="modal-overlay" onClick={() => setSelectedRecord(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">Ficha de Información</h3>
-              <button className="modal-close" onClick={() => setSelectedRecord(null)}>×</button>
-            </div>
-
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              {renderAvatar(selectedRecord, recordType === 'pet')}
-              <h2 style={{ marginTop: '8px', fontSize: '20px' }}>{selectedRecord.nombre}</h2>
-              <span className={`record-badge badge-${selectedRecord.estatus.toLowerCase()}`} style={{ display: 'inline-block', padding: '4px 12px' }}>
-                {selectedRecord.estatus}
-              </span>
-            </div>
-
-            <div className="card" style={{ fontSize: '13px', textAlign: 'left' }}>
-              {recordType === 'person' ? (
-                <>
-                  <p style={{ marginBottom: '6px' }}><strong>Edad:</strong> {selectedRecord.edad ? `${selectedRecord.edad} años` : 'Desconocida'}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Género:</strong> {selectedRecord.genero}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Último lugar visto:</strong> {selectedRecord.sector}, {selectedRecord.municipio}, {selectedRecord.estado}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Señas particulares:</strong> {selectedRecord.señas}</p>
-
-                  <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
-                    <p style={{ marginBottom: '4px' }}><strong>Familiar Contacto:</strong> {selectedRecord.reportanteNombre}</p>
-                    <p><strong>Teléfono:</strong> <a href={`tel:${selectedRecord.reportanteTelefono}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.reportanteTelefono}</a></p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p style={{ marginBottom: '6px' }}><strong>Especie:</strong> {selectedRecord.especie}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Raza:</strong> {selectedRecord.raza || 'Mestizo'}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Color:</strong> {selectedRecord.color}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Collar:</strong> {selectedRecord.collar}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Ubicación de pérdida:</strong> {selectedRecord.sector}, {selectedRecord.municipio}, {selectedRecord.estado}</p>
-                  <p style={{ marginBottom: '6px' }}><strong>Señas particulares / Detalles:</strong> {selectedRecord.señas}</p>
-
-                  <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
-                    <p style={{ marginBottom: '4px' }}><strong>Contacto Dueño:</strong> {selectedRecord.contactoNombre}</p>
-                    <p><strong>Teléfono:</strong> <a href={`tel:${selectedRecord.contactoTelefono}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.contactoTelefono}</a></p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Datos del Localizador si fue encontrado */}
-            {selectedRecord.estatus === 'Localizado' && selectedRecord.localizadorNombre && (
-              <div className="card" style={{ marginTop: '12px', background: 'var(--color-success-light)', borderColor: 'var(--color-success)', borderStyle: 'solid', padding: '12px', fontSize: '13px', textAlign: 'left' }}>
-                <h4 style={{ color: 'var(--color-success)', fontWeight: '800', marginBottom: '6px', fontSize: '14px' }}>🤝 Datos de Reencuentro</h4>
-                <p style={{ marginBottom: '4px' }}><strong>Encontrado por:</strong> {selectedRecord.localizadorNombre}</p>
-                <p style={{ marginBottom: '4px' }}><strong>Ubicación actual:</strong> {selectedRecord.localizadorUbicacion}</p>
-                {selectedRecord.localizadorNotas && <p style={{ marginBottom: '4px' }}><strong>Estado/Notas:</strong> {selectedRecord.localizadorNotas}</p>}
-                {selectedRecord.fechaLocalizacion && <p style={{ marginBottom: '6px', fontSize: '11px', color: 'var(--text-secondary)' }}>Reportado el {new Date(selectedRecord.fechaLocalizacion).toLocaleString()}</p>}
-
-                <div style={{ marginTop: '10px', borderTop: '1px solid rgba(30, 184, 120, 0.2)', paddingTop: '10px' }}>
-                  <p style={{ fontWeight: '700', marginBottom: '6px', fontSize: '12px' }}>Contactar a quien lo localizó:</p>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <a href={`tel:${selectedRecord.localizadorTelefono}`} className="btn btn-secondary" style={{ flex: 1, minHeight: '36px', height: '36px', padding: '4px', fontSize: '12px' }}>
-                      📞 Llamar
-                    </a>
-                    <a href={`https://wa.me/${selectedRecord.localizadorTelefono.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, minHeight: '36px', height: '36px', padding: '4px', fontSize: '12px', backgroundColor: '#25D366' }}>
-                      💬 WhatsApp
-                    </a>
-                  </div>
+        (() => {
+          const phoneDetails = getRecordPhoneDetails();
+          return (
+            <div className="modal-overlay" onClick={() => setSelectedRecord(null)}>
+              <div className="modal-content" style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header" style={{ flexShrink: 0 }}>
+                  <h3 className="modal-title">Ficha de Información</h3>
+                  <button className="modal-close" onClick={() => setSelectedRecord(null)}>×</button>
                 </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px', marginBottom: '8px' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                    {recordType === 'center' ? (
+                      <div className="avatar-placeholder" style={{ backgroundColor: 'var(--color-success-light)', color: 'var(--color-success)', margin: '0 auto', fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%' }}>
+                        📦
+                      </div>
+                    ) : (
+                      renderAvatar(selectedRecord, recordType === 'pet')
+                    )}
+                    <h2 style={{ marginTop: '8px', fontSize: '20px' }}>{selectedRecord.nombre}</h2>
+                    {recordType === 'center' ? (
+                      <span
+                        className="record-badge"
+                        style={{
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          backgroundColor: selectedRecord.estatus === 'Activo' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
+                          color: selectedRecord.estatus === 'Activo' ? 'var(--color-success)' : 'var(--color-danger)'
+                        }}
+                      >
+                        {selectedRecord.estatus || 'Activo'}
+                      </span>
+                    ) : (
+                      <span className={`record-badge badge-${selectedRecord.estatus.toLowerCase()}`} style={{ display: 'inline-block', padding: '4px 12px' }}>
+                        {selectedRecord.estatus}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="card" style={{ fontSize: '13px', textAlign: 'left' }}>
+                    {recordType === 'person' ? (
+                      <>
+                        <p style={{ marginBottom: '6px' }}><strong>Edad:</strong> {selectedRecord.edad ? `${selectedRecord.edad} años` : 'Desconocida'}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Género:</strong> {selectedRecord.genero}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Último lugar visto:</strong> {selectedRecord.sector}, {selectedRecord.municipio}, {selectedRecord.estado}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Señas particulares:</strong> {selectedRecord.señas}</p>
+
+                        <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+                          <p style={{ marginBottom: '4px' }}><strong>Familiar Contacto:</strong> {selectedRecord.reportanteNombre}</p>
+                          <p><strong>Teléfono:</strong> <a href={`tel:${selectedRecord.reportanteTelefono}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.reportanteTelefono}</a></p>
+                        </div>
+                      </>
+                    ) : recordType === 'pet' ? (
+                      <>
+                        <p style={{ marginBottom: '6px' }}><strong>Especie:</strong> {selectedRecord.especie}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Raza:</strong> {selectedRecord.raza || 'Mestizo'}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Color:</strong> {selectedRecord.color}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Collar:</strong> {selectedRecord.collar}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Ubicación de pérdida:</strong> {selectedRecord.sector}, {selectedRecord.municipio}, {selectedRecord.estado}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Señas particulares / Detalles:</strong> {selectedRecord.señas}</p>
+
+                        <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+                          <p style={{ marginBottom: '4px' }}><strong>Contacto Dueño:</strong> {selectedRecord.contactoNombre}</p>
+                          <p><strong>Teléfono:</strong> <a href={`tel:${selectedRecord.contactoTelefono}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.contactoTelefono}</a></p>
+                        </div>
+                      </>
+                    ) : (
+                      // recordType === 'center'
+                      <>
+                        <p style={{ marginBottom: '6px' }}><strong>Dirección:</strong> {selectedRecord.direccion}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Municipio:</strong> {selectedRecord.municipio}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Estado:</strong> {selectedRecord.estado}</p>
+                        <p style={{ marginBottom: '6px' }}><strong>Horario:</strong> {selectedRecord.horario || 'No especificado'}</p>
+
+                        <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+                          <p style={{ marginBottom: '4px' }}><strong>Contacto / Responsable:</strong> {selectedRecord.contacto}</p>
+                          {selectedRecord.contacto && selectedRecord.contacto.match(/\d+/) && (
+                            <p style={{ marginBottom: '4px' }}>
+                              <strong>Teléfono:</strong> <a href={`tel:${selectedRecord.contacto.replace(/[^0-9+]/g, "")}`} style={{ color: 'var(--color-info)' }}>{selectedRecord.contacto}</a>
+                            </p>
+                          )}
+                        </div>
+
+                        {selectedRecord.googleMapsUrl && (
+                          <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px', display: 'flex' }}>
+                            <a href={selectedRecord.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minHeight: '36px', height: '36px', width: '100%', fontSize: '12px', textDecoration: 'none' }}>
+                              🗺️ Ver Ruta en Google Maps
+                            </a>
+                          </div>
+                        )}
+
+                        <div style={{ marginTop: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+                          <h4 style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>📋 Insumos Requeridos</h4>
+                          {selectedRecord.necesidades && selectedRecord.necesidades.length > 0 ? (
+                            <div className="supplies-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                              {selectedRecord.necesidades.map((n, idx) => (
+                                <div key={idx} className={`supply-item supply-${n.prioridad}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                                  <span>{n.item}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin necesidades registradas actualmente.</p>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Datos del Localizador si fue encontrado */}
+                  {selectedRecord.estatus === 'Localizado' && selectedRecord.localizadorNombre && (
+                    <div className="card" style={{ marginTop: '12px', background: 'var(--color-success-light)', borderColor: 'var(--color-success)', borderStyle: 'solid', padding: '12px', fontSize: '13px', textAlign: 'left' }}>
+                      <h4 style={{ color: 'var(--color-success)', fontWeight: '800', marginBottom: '6px', fontSize: '14px' }}>🤝 Datos de Reencuentro</h4>
+                      <p style={{ marginBottom: '4px' }}><strong>Encontrado por:</strong> {selectedRecord.localizadorNombre}</p>
+                      <p style={{ marginBottom: '4px' }}><strong>Ubicación actual:</strong> {selectedRecord.localizadorUbicacion}</p>
+                      {selectedRecord.localizadorNotas && <p style={{ marginBottom: '4px' }}><strong>Estado/Notas:</strong> {selectedRecord.localizadorNotas}</p>}
+                      {selectedRecord.fechaLocalizacion && <p style={{ marginBottom: '6px', fontSize: '11px', color: 'var(--text-secondary)' }}>Reportado el {new Date(selectedRecord.fechaLocalizacion).toLocaleString()}</p>}
+
+                      <div style={{ marginTop: '10px', borderTop: '1px solid rgba(30, 184, 120, 0.2)', paddingTop: '10px' }}>
+                        <p style={{ fontWeight: '700', marginBottom: '6px', fontSize: '12px' }}>Contactar a quien lo localizó:</p>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <a href={`tel:${selectedRecord.localizadorTelefono}`} className="btn btn-secondary" style={{ flex: 1, minHeight: '36px', height: '36px', padding: '4px', fontSize: '12px' }}>
+                            📞 Llamar
+                          </a>
+                          <a href={`https://wa.me/${selectedRecord.localizadorTelefono.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, minHeight: '36px', height: '36px', padding: '4px', fontSize: '12px', backgroundColor: '#25D366' }}>
+                            💬 WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Acción Pública de Localización (Cualquier usuario puede reportar hallazgo) */}
+                  {selectedRecord.estatus === 'Desaparecido' && (
+                    <div style={{ marginTop: '16px' }}>
+                      <button
+                        onClick={() => setShowFinderModal(true)}
+                        className="btn btn-success"
+                      >
+                        🤝 ¡Lo encontré! / Reportar Localización
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Fijo con Acciones de Contacto Principal */}
+                {phoneDetails && (
+                  <div style={{ flexShrink: 0, borderTop: '1px solid var(--color-border)', paddingTop: '12px', background: 'var(--bg-card)' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <a
+                        href={phoneDetails.callUrl}
+                        className="btn btn-secondary"
+                        style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minHeight: '40px', height: '40px', fontSize: '13px', textDecoration: 'none' }}
+                      >
+                        📞 Llamar ({phoneDetails.raw})
+                      </a>
+                      <a
+                        href={phoneDetails.waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary"
+                        style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minHeight: '40px', height: '40px', fontSize: '13px', textDecoration: 'none', backgroundColor: '#25D366' }}
+                      >
+                        💬 WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                )}
+
               </div>
-            )}
-
-            {/* Acción Pública de Localización (Cualquier usuario puede reportar hallazgo) */}
-            {selectedRecord.estatus === 'Desaparecido' && (
-              <div style={{ marginTop: '16px' }}>
-                <button
-                  onClick={() => setShowFinderModal(true)}
-                  className="btn btn-success"
-                >
-                  🤝 ¡Lo encontré! / Reportar Localización
-                </button>
-              </div>
-            )}
-
-            <button className="btn btn-secondary" style={{ marginTop: '12px' }} onClick={() => setSelectedRecord(null)}>
-              Cerrar Ficha
-            </button>
-
-          </div>
-        </div>
+            </div>
+          );
+        })()
       )}
 
       {/* --- MODAL DE REGISTRO UNIFICADO (PERSONAS Y MASCOTAS CON PESTAÑAS) --- */}
@@ -1589,7 +1788,7 @@ export default function App() {
               {/* Dynamic Needs Sub-form */}
               <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '20px', paddingTop: '16px' }}>
                 <h4 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>Insumos Requeridos</h4>
-                
+
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                   <input
                     type="text"
