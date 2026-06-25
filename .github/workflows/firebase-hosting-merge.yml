@@ -16,6 +16,13 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm install && npm run build
+        env:
+          VITE_FIREBASE_API_KEY: "AIzaSyDS-Z34Oc_XNxah2qlFShh2GRjI3jDWaCw"
+          VITE_FIREBASE_AUTH_DOMAIN: "sos-venezuela-ayuda.firebaseapp.com"
+          VITE_FIREBASE_PROJECT_ID: "sos-venezuela-ayuda"
+          VITE_FIREBASE_STORAGE_BUCKET: "sos-venezuela-ayuda.firebasestorage.app"
+          VITE_FIREBASE_MESSAGING_SENDER_ID: "826318538785"
+          VITE_FIREBASE_APP_ID: "1:826318538785:web:3ca86b617a31361cf87b60"
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
