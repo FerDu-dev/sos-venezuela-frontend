@@ -464,29 +464,42 @@ export default function App() {
           </button>
         </nav>
 
-        <button
-          onClick={() => {
-            if (activeTab === 'acopio') {
-              setShowCenterModal(true);
-            } else {
-              setActiveTab('acopio');
-              setSearchQuery('');
-            }
-          }}
-          className={`btn-report-header ${activeTab === 'acopio' ? 'btn-header-green' : 'btn-header-unicef'}`}
-        >
-          {activeTab === 'acopio' ? (
-            <>
-              <span className="fab-icon" style={{ marginRight: '4px' }}>✚</span>
-              <span>Registrar Centro</span>
-            </>
-          ) : (
-            <>
-              <span className="fab-icon" style={{ marginRight: '4px' }}>📦</span>
-              <span>Ver Acopios</span>
-            </>
-          )}
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => {
+              if (activeTab === 'acopio') {
+                setShowCenterModal(true);
+              } else {
+                setActiveTab('acopio');
+                setSearchQuery('');
+              }
+            }}
+            className={`btn-report-header ${activeTab === 'acopio' ? 'btn-header-green' : 'btn-header-unicef'}`}
+          >
+            {activeTab === 'acopio' ? (
+              <>
+                <span className="fab-icon" style={{ marginRight: '4px' }}>✚</span>
+                <span>Registrar Centro</span>
+              </>
+            ) : (
+              <>
+                <span className="fab-icon" style={{ marginRight: '4px' }}>📦</span>
+                <span>Ver Acopios</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              setReportFormTab('person');
+              setShowReportModal(true);
+            }}
+            className="btn-report-header"
+          >
+            <span className="fab-icon" style={{ marginRight: '4px' }}>✚</span>
+            <span>Reportar Caso</span>
+          </button>
+        </div>
       </header>
 
       {/* CONTENIDO DINÁMICO */}
@@ -1863,30 +1876,17 @@ export default function App() {
         </div>
       )}
 
-      {/* Botón Flotante de Acción (FAB) Dinámico (Siempre visible en todas las vistas en móvil) */}
+      {/* Botón Flotante de Acción (FAB) - Estilo Cruz Roja (Siempre visible en todas las vistas en móvil) */}
       <button
-        className={`fab ${activeTab === 'acopio' ? 'fab-green' : 'fab-unicef'}`}
+        className="fab"
         onClick={() => {
-          if (activeTab === 'acopio') {
-            setShowCenterModal(true);
-          } else {
-            setActiveTab('acopio');
-            setSearchQuery('');
-          }
+          setReportFormTab('person');
+          setShowReportModal(true);
         }}
-        title={activeTab === 'acopio' ? "Registrar Centro de Acopio" : "Ver Centros de Acopio"}
+        title="Reportar Caso (Desaparecido / Mascota)"
       >
-        {activeTab === 'acopio' ? (
-          <>
-            <span className="fab-icon">✚</span>
-            <span>Registrar</span>
-          </>
-        ) : (
-          <>
-            <span className="fab-icon">📦</span>
-            <span>Ver Acopios</span>
-          </>
-        )}
+        <span className="fab-icon">✚</span>
+        <span>Reportar Caso</span>
       </button>
     </>
 
