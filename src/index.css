@@ -1,0 +1,950 @@
+/* Sistema de Diseño: Estilo UNICEF / Ayuda Humanitaria (Limpio, Claro y Profesional) */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Colores UNICEF - Enfoque claro, limpio e inspirador de confianza */
+  --bg-app: #f4f7f9;             /* Fondo gris azulado muy claro */
+  --bg-card: #ffffff;            /* Fondo blanco de tarjetas */
+  --bg-card-elevated: #ffffff;
+  --color-border: #e1e7ec;       /* Bordes sutiles */
+  
+  --color-unicef: #00adef;       /* Azul Celeste UNICEF Principal */
+  --color-unicef-dark: #008cc2;  /* Azul UNICEF para estados activos */
+  --color-unicef-light: #e6f7fe; /* Fondo celeste para badges y botones */
+  
+  --text-primary: #1c2a38;       /* Texto oscuro legible */
+  --text-secondary: #607282;     /* Texto secundario gris azulado */
+  
+  --color-danger: #d94141;       /* Rojo Coral para Desaparecidos (visible pero no agresivo) */
+  --color-danger-light: #fdf2f2;
+  
+  --color-success: #1eb878;      /* Verde Esperanza para Localizados */
+  --color-success-light: #eefbf5;
+  
+  --color-warning: #f2994a;      /* Naranja para acopio / alerta */
+  --color-warning-light: #fef5ec;
+
+  --color-info: #00adef;
+  --color-info-light: #e6f7fe;
+
+  --header-height: 60px;
+  --tabbar-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+  min-height: 100vh;
+  height: auto;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: auto;
+  position: relative;
+  background-color: var(--bg-app);
+  width: 100%;
+}
+
+/* --- HEADER --- */
+.app-header {
+  height: var(--header-height);
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .app-header {
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1248px) {
+  .app-header {
+    padding: 0 calc((100% - 1200px) / 2 + 24px);
+  }
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.5px;
+  color: var(--color-unicef-dark);
+}
+
+.badge-emergency {
+  background-color: var(--color-unicef);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.app-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 96px; /* Margen para tabbar móvil */
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .app-content {
+    padding: 24px;
+    padding-bottom: 40px; /* Sin tabbar en desktop */
+  }
+}
+
+/* --- BOTTOM TAB BAR (Estilo UNICEF) --- */
+.app-tabbar {
+  height: var(--tabbar-height);
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+  left: 0;
+}
+
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-item:active {
+  transform: scale(0.92);
+}
+
+.tab-icon {
+  font-size: 18px;
+}
+
+.tab-item.active {
+  color: var(--color-unicef);
+  font-weight: 700;
+}
+
+/* --- COMPONENTES COMUNES --- */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+}
+
+/* Botones con estilo UNICEF */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  min-height: 48px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-unicef);
+  color: white;
+}
+
+.btn-primary:active {
+  background-color: var(--color-unicef-dark);
+}
+
+.btn-secondary {
+  background-color: var(--bg-card-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--text-primary);
+}
+
+.btn-secondary:active {
+  background-color: #f1f5f8;
+}
+
+.btn-info {
+  background-color: var(--color-unicef-dark);
+  color: white;
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.btn-success:active {
+  background-color: #17935f;
+}
+
+/* Buscadores y Campos de texto */
+.search-wrapper {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.input-field {
+  flex: 1;
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  min-height: 48px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: var(--color-unicef);
+  box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.1);
+}
+
+.select-field {
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  min-height: 48px;
+}
+
+.select-field:focus {
+  border-color: var(--color-unicef);
+}
+
+/* Filtros rápidos horizontal */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill.active {
+  background-color: var(--color-unicef);
+  color: white;
+  border-color: var(--color-unicef);
+}
+
+/* Grillas y Listas */
+.records-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .records-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+
+/* --- FICHA DE PERSONA / MASCOTA --- */
+.record-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Avatar de Iniciales */
+.record-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%; /* Avatares circulares limpios estilo UNICEF */
+  object-fit: cover;
+  background-color: var(--color-border);
+}
+
+.avatar-placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-unicef-light);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-unicef-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.record-info {
+  flex: 1;
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.record-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.record-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-desaparecido {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.badge-localizado {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.record-details {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.record-details strong {
+  color: var(--text-primary);
+}
+
+/* --- PESTAÑA INICIO (DASHBOARD) --- */
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 600px) {
+  .dashboard-metrics {
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas en desktop */
+  }
+}
+
+
+.metric-card {
+  text-align: center;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+}
+
+.metric-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.metric-value.danger { color: var(--color-danger); }
+.metric-value.success { color: var(--color-success); }
+.metric-value.info { color: var(--color-unicef-dark); }
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.rate-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.alert-banner {
+  background-color: var(--color-unicef-light);
+  border: 1px solid var(--color-unicef);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alert-icon {
+  font-size: 18px;
+  color: var(--color-unicef-dark);
+}
+
+.alert-body h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.alert-body p {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Modales */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(28, 42, 56, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end; /* Bottom sheet en móviles */
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center; /* Diálogo centrado en desktop */
+  }
+}
+
+.modal-content {
+  background-color: var(--bg-card);
+  width: 100%;
+  max-width: 480px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 24px 16px 32px 16px;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slide-up 0.25s ease-out;
+}
+
+@media (min-width: 768px) {
+  .modal-content {
+    border-radius: 16px; /* Redondeado completo para escritorio */
+    max-width: 520px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+}
+
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+/* Centros de Acopio Semáforo */
+.supplies-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.supply-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.supply-high {
+  background-color: var(--color-danger-light);
+  border: 1px solid rgba(217, 65, 65, 0.15);
+}
+.supply-high::after {
+  content: "URGENTE";
+  color: var(--color-danger);
+  font-weight: 800;
+}
+
+.supply-medium {
+  background-color: var(--color-warning-light);
+  border: 1px solid rgba(242, 153, 74, 0.15);
+}
+.supply-medium::after {
+  content: "SOLICITADO";
+  color: var(--color-warning);
+  font-weight: 800;
+}
+
+.supply-low {
+  background-color: var(--color-success-light);
+  border: 1px solid rgba(30, 184, 120, 0.15);
+}
+.supply-low::after {
+  content: "ABUNDANTE";
+  color: var(--color-success);
+  font-weight: 800;
+}
+
+/* Emergencias Teléfonos */
+.emergency-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emergency-contact-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.emergency-contact-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.emergency-contact-info p {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.btn-call {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background-color: var(--color-unicef-light);
+  color: var(--color-unicef-dark);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-call:active {
+  background-color: var(--color-unicef);
+  color: white;
+}
+
+/* Animaciones */
+@keyframes slide-up {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Imagen subida preview */
+.image-upload-preview {
+  width: 100%;
+  height: 150px;
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--bg-app);
+}
+
+.image-upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Admin floating banner */
+.admin-mode-indicator {
+  background: linear-gradient(90deg, var(--color-unicef-dark), #0077a8);
+  color: white;
+  font-size: 11px;
+  padding: 5px 8px;
+  text-align: center;
+  font-weight: 700;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 99;
+  letter-spacing: 0.5px;
+}
+
+/* Botón Flotante de Acción (FAB) - Estilo Cruz Roja */
+.fab {
+  position: fixed;
+  bottom: calc(var(--tabbar-height) + 16px);
+  right: 16px;
+  background-color: #e03131; /* Rojo de la Cruz Roja */
+  color: white;
+  border: none;
+  border-radius: 28px;
+  padding: 0 18px;
+  height: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(224, 49, 49, 0.35); /* Sombra rojiza */
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 90;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.fab:active {
+  transform: scale(0.92);
+  background-color: #c92a2a;
+}
+
+.fab-icon {
+  font-size: 20px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .fab {
+    display: none !important;
+  }
+}
+
+.btn-report-header {
+  display: none;
+}
+
+/* Píldora activa en color rojo para el modal unificado */
+.filter-pill.active-red {
+  background-color: #e03131;
+  color: white;
+  border-color: #e03131;
+}
+
+/* --- SISTEMA RESPONSIVE / ESCRITORIO --- */
+
+/* Navegación en Header para Desktop */
+.desktop-nav {
+  display: none; /* Oculto por defecto en móvil */
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.desktop-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.desktop-nav-item:hover {
+  background-color: var(--bg-app);
+  color: var(--color-unicef-dark);
+}
+
+.desktop-nav-item.active {
+  background-color: var(--color-unicef-light);
+  color: var(--color-unicef-dark);
+}
+
+.nav-icon {
+  font-size: 15px;
+}
+
+/* Mostrar menú superior en pantallas medianas y grandes */
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+  }
+  .app-tabbar {
+    display: none !important;
+  }
+  .btn-report-header {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e03131; /* Rojo de la Cruz Roja */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  .btn-report-header:hover {
+    background-color: #c92a2a;
+  }
+  .btn-report-header:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Layouts Multicolumna para Desktop */
+
+/* Dashboard (Inicio) */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: 8fr 4fr;
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+.dashboard-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: calc(var(--header-height) + 16px);
+}
+
+/* Buscadores (Personas, Mascotas, Acopio) */
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .page-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+.page-sidebar {
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .page-sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + 16px);
+    max-height: calc(100vh - var(--header-height) - 48px);
+    overflow-y: auto;
+  }
+}
+
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-group h5 {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.page-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* Reorientar filtro de píldoras a lista vertical en barra lateral para pantallas grandes */
+@media (min-width: 768px) {
+  .page-sidebar .filter-tabs {
+    flex-direction: column;
+    align-items: stretch;
+    overflow-x: visible;
+    gap: 6px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .page-sidebar .filter-pill {
+    text-align: left;
+    border-radius: 6px;
+    padding: 8px 12px;
+    width: 100%;
+    margin-bottom: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* Grilla de Emergencia y Reportes en Desktop */
+@media (min-width: 768px) {
+  .emergency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+}
+
+
