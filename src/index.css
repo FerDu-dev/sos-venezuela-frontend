@@ -947,4 +947,46 @@ body {
   }
 }
 
+/* Botones de acción superiores rápidos */
+.btn-action-top {
+  width: auto;
+  min-width: fit-content;
+  white-space: nowrap;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+/* Botón de advertencia naranja para mascotas */
+.btn-warning {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.btn-warning:active {
+  background-color: #d97706;
+}
+
+/* Elementos de eliminación en lista dinámica de insumos en el modal */
+.supply-delete-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  transition: background-color 0.2s ease;
+}
+
+.supply-delete-btn:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+
 

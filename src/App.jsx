@@ -7,6 +7,7 @@ import {
   addPet,
   updatePetStatus,
   getCenters,
+  addCenter,
   getMetrics
 } from './services/db';
 import { compressImage } from './utils/imageCompressor';
@@ -63,6 +64,16 @@ export default function App() {
   });
   const [petPhoto, setPetPhoto] = useState(null);
   const [petPhotoPreview, setPetPhotoPreview] = useState(null);
+
+  // Formulario Centro de Acopio
+  const [showCenterModal, setShowCenterModal] = useState(false);
+  const [centerForm, setCenterForm] = useState({
+    nombre: '', estado: '', municipio: '', direccion: '',
+    contacto: '', horario: '', googleMapsUrl: ''
+  });
+  const [centerNeeds, setCenterNeeds] = useState([]);
+  const [newNeedItem, setNewNeedItem] = useState('');
+  const [newNeedPriority, setNewNeedPriority] = useState('alta');
 
   // Cargar datos
   const loadData = async () => {
@@ -176,7 +187,7 @@ export default function App() {
     // Resetear formulario
     setPersonForm({
       nombre: '', edad: '', genero: 'Masculino',
-      estado: 'Caracas', municipio: '', sector: '',
+      estado: '', municipio: '', sector: '',
       ultimaVez: '', señas: '',
       reportanteNombre: '', reportanteTelefono: ''
     });
@@ -205,7 +216,7 @@ export default function App() {
 
     setPetForm({
       nombre: '', especie: 'Perro', raza: '', color: '',
-      collar: 'No', estado: 'Caracas', municipio: '', sector: '',
+      collar: 'No', estado: '', municipio: '', sector: '',
       señas: '', contactoNombre: '', contactoTelefono: ''
     });
     setPetPhoto(null);
@@ -213,6 +224,32 @@ export default function App() {
 
     await loadData();
     alert("Mascota registrada con éxito.");
+  };
+
+  const handleCenterSubmit = async (e) => {
+    e.preventDefault();
+    if (!centerForm.nombre || !centerForm.estado || !centerForm.municipio || !centerForm.direccion || !centerForm.contacto) {
+      alert("Por favor completa los campos obligatorios (*)");
+      return;
+    }
+
+    const docData = {
+      ...centerForm,
+      necesidades: centerNeeds
+    };
+
+    await addCenter(docData);
+    setShowCenterModal(false);
+
+    // Resetear formulario
+    setCenterForm({
+      nombre: '', estado: '', municipio: '', direccion: '',
+      contacto: '', horario: '', googleMapsUrl: ''
+    });
+    setCenterNeeds([]);
+
+    await loadData();
+    alert("Centro de acopio registrado con éxito.");
   };
 
   const handleStatusChange = async (recordId, newStatus, type, finderData = null) => {
@@ -301,6 +338,7 @@ export default function App() {
   const isPersonFormValid = personForm.nombre.trim() !== '' && personForm.sector.trim() !== '' && personForm.estado !== '';
   const isPetFormValid = petForm.nombre.trim() !== '' && petForm.sector.trim() !== '' && petForm.estado !== '';
   const isFinderFormValid = finderForm.nombre.trim() !== '' && finderForm.telefono.trim() !== '' && finderForm.ubicacion.trim() !== '';
+  const isCenterFormValid = centerForm.nombre.trim() !== '' && centerForm.estado !== '' && centerForm.municipio.trim() !== '' && centerForm.direccion.trim() !== '' && centerForm.contacto.trim() !== '';
 
   return (
     <>
@@ -504,6 +542,16 @@ export default function App() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="btn btn-primary btn-action-top"
+                  onClick={() => {
+                    setReportFormTab('person');
+                    setShowReportModal(true);
+                  }}
+                >
+                  ➕ Reportar Persona
+                </button>
               </div>
 
               <div className="records-list">
@@ -568,6 +616,13 @@ export default function App() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="btn btn-success btn-action-top"
+                  onClick={() => setShowCenterModal(true)}
+                >
+                  ➕ Registrar Centro
+                </button>
               </div>
 
               <div className="records-list">
@@ -676,6 +731,16 @@ export default function App() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
+                <button
+                  type="button"
+                  className="btn btn-warning btn-action-top"
+                  onClick={() => {
+                    setReportFormTab('pet');
+                    setShowReportModal(true);
+                  }}
+                >
+                  ➕ Reportar Mascota
+                </button>
               </div>
 
               <div className="records-list">
@@ -1308,6 +1373,183 @@ export default function App() {
                   }}
                 >
                   Confirmar Localización
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL DE REGISTRO DE CENTRO DE ACOPIO --- */}
+      {showCenterModal && (
+        <div className="modal-overlay" onClick={() => setShowCenterModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Registrar Centro de Acopio</h3>
+              <button className="modal-close" onClick={() => setShowCenterModal(false)}>×</button>
+            </div>
+
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', textAlign: 'left' }}>
+              Registra un punto de recolección de ayuda humanitaria e insumos para los afectados.
+            </p>
+
+            <form onSubmit={handleCenterSubmit}>
+              <div className="form-group">
+                <label className="form-label">Nombre del Centro *</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ej: Cruz Roja Seccional Caracas / Colegio San Ignacio"
+                  required
+                  value={centerForm.nombre}
+                  onChange={(e) => setCenterForm({ ...centerForm, nombre: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label className="form-label">Estado *</label>
+                  <select
+                    className="select-field"
+                    style={{ width: '100%' }}
+                    value={centerForm.estado}
+                    onChange={(e) => setCenterForm({ ...centerForm, estado: e.target.value })}
+                  >
+                    <option value="">Selecciona un Estado...</option>
+                    {VENEZUELAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Municipio *</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Ej: Chacao"
+                    required
+                    value={centerForm.municipio}
+                    onChange={(e) => setCenterForm({ ...centerForm, municipio: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Dirección Exacta *</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ej: Av. Francisco de Miranda, al lado de la estación de servicio..."
+                  required
+                  value={centerForm.direccion}
+                  onChange={(e) => setCenterForm({ ...centerForm, direccion: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group">
+                  <label className="form-label">Teléfono / Contacto *</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Ej: 0412-1234567"
+                    required
+                    value={centerForm.contacto}
+                    onChange={(e) => setCenterForm({ ...centerForm, contacto: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Horario de Atención</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Ej: 8:00 AM - 5:00 PM"
+                    value={centerForm.horario}
+                    onChange={(e) => setCenterForm({ ...centerForm, horario: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Enlace Google Maps (Opcional)</label>
+                <input
+                  type="url"
+                  className="input-field"
+                  placeholder="Ej: https://maps.google.com/..."
+                  value={centerForm.googleMapsUrl}
+                  onChange={(e) => setCenterForm({ ...centerForm, googleMapsUrl: e.target.value })}
+                />
+              </div>
+
+              {/* Dynamic Needs Sub-form */}
+              <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '20px', paddingTop: '16px' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>Insumos Requeridos</h4>
+                
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                  <input
+                    type="text"
+                    className="input-field"
+                    style={{ flex: 2, minHeight: '38px', padding: '8px 12px', fontSize: '13px' }}
+                    placeholder="Ej: Agua potable, Enlatados..."
+                    value={newNeedItem}
+                    onChange={(e) => setNewNeedItem(e.target.value)}
+                  />
+                  <select
+                    className="select-field"
+                    style={{ flex: 1, minHeight: '38px', padding: '8px 12px', fontSize: '13px' }}
+                    value={newNeedPriority}
+                    onChange={(e) => setNewNeedPriority(e.target.value)}
+                  >
+                    <option value="alta">Alta</option>
+                    <option value="media">Media</option>
+                    <option value="baja">Baja</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{ width: 'auto', minHeight: '38px', padding: '0 16px', fontSize: '13px' }}
+                    onClick={() => {
+                      if (newNeedItem.trim() !== '') {
+                        setCenterNeeds([...centerNeeds, { item: newNeedItem.trim(), prioridad: newNeedPriority }]);
+                        setNewNeedItem('');
+                      }
+                    }}
+                  >
+                    ➕ Agregar
+                  </button>
+                </div>
+
+                <div className="supplies-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {centerNeeds.map((n, idx) => (
+                    <div key={idx} className={`supply-item supply-${n.prioridad}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                      <span>{n.item}</span>
+                      <button
+                        type="button"
+                        className="supply-delete-btn"
+                        onClick={() => setCenterNeeds(centerNeeds.filter((_, i) => i !== idx))}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {centerNeeds.length === 0 && (
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Ninguno agregado aún.</span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ marginTop: '24px' }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={!isCenterFormValid}
+                  style={{
+                    width: '100%',
+                    backgroundColor: isCenterFormValid ? 'var(--color-unicef)' : '#cbd5e1',
+                    color: isCenterFormValid ? '#ffffff' : '#64748b',
+                    cursor: isCenterFormValid ? 'pointer' : 'not-allowed',
+                    opacity: isCenterFormValid ? 1 : 0.8
+                  }}
+                >
+                  Registrar Centro de Acopio
                 </button>
               </div>
             </form>

@@ -329,3 +329,34 @@ export async function getMetrics() {
     }
   };
 }
+
+// 9. REGISTRAR CENTRO DE ACOPIO
+export async function addCenter(centerData) {
+  const newCenter = {
+    ...centerData,
+    estatus: centerData.estatus || "Activo",
+    fechaReporte: new Date().toISOString()
+  };
+
+  if (isFirebaseConfigured && db) {
+    try {
+      const docRef = await addDoc(collection(db, "centros_acopio"), newCenter);
+      return { id: docRef.id, ...newCenter };
+    } catch (e) {
+      console.error("Error escribiendo Firestore, guardando local", e);
+      return addLocalCenter(newCenter);
+    }
+  } else {
+    return addLocalCenter(newCenter);
+  }
+}
+
+function addLocalCenter(newCenter) {
+  const list = getLocalCenters();
+  const id = "c_local_" + Date.now();
+  const created = { id, ...newCenter };
+  list.unshift(created);
+  localStorage.setItem("sama_centers", JSON.stringify(list));
+  return created;
+}
+
