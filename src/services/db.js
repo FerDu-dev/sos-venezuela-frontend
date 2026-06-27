@@ -397,3 +397,30 @@ function addLocalCenter(newCenter) {
   return created;
 }
 
+// 10. ACTUALIZAR NECESIDADES DE UN CENTRO DE ACOPIO
+export async function updateCenterNeeds(centerId, needs) {
+  if (isFirebaseConfigured && db) {
+    try {
+      const docRef = doc(db, "centros_acopio", centerId);
+      await updateDoc(docRef, { necesidades: needs });
+      return true;
+    } catch (e) {
+      console.error("Error actualizando necesidades en Firestore", e);
+      return updateLocalCenterNeeds(centerId, needs);
+    }
+  } else {
+    return updateLocalCenterNeeds(centerId, needs);
+  }
+}
+
+function updateLocalCenterNeeds(centerId, needs) {
+  const list = getLocalCenters();
+  const index = list.findIndex(c => c.id === centerId);
+  if (index !== -1) {
+    list[index].necesidades = needs;
+    localStorage.setItem("sama_centers", JSON.stringify(list));
+    return true;
+  }
+  return false;
+}
+

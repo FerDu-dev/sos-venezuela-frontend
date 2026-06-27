@@ -8,6 +8,7 @@ import {
   updatePetStatus,
   getCenters,
   addCenter,
+  updateCenterNeeds,
   getMetrics
 } from './services/db';
 import { compressImage } from './utils/imageCompressor';
@@ -84,6 +85,11 @@ export default function App() {
 
   // Estado de envío de formularios
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Agregar insumos desde el modal de detalle
+  const [newDetailNeedItem, setNewDetailNeedItem] = useState('');
+  const [newDetailNeedPriority, setNewDetailNeedPriority] = useState('alta');
+  const [isAddingDetailNeed, setIsAddingDetailNeed] = useState(false);
 
   // Cargar datos
   const loadData = async (silent = false) => {
@@ -502,6 +508,60 @@ export default function App() {
       alert("Error al confirmar localización. Por favor intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleAddDetailNeed = async (e) => {
+    e.preventDefault();
+    if (!newDetailNeedItem.trim()) {
+      alert("Por favor escribe el nombre del insumo.");
+      return;
+    }
+
+    if (!selectedRecord || recordType !== 'center') return;
+
+    setIsAddingDetailNeed(true);
+    try {
+      const currentNeeds = selectedRecord.necesidades || [];
+      const itemText = newDetailNeedItem.trim();
+
+      // Verificar si ya existe (normalizando texto)
+      const exists = currentNeeds.some(n => 
+        normalizeText(n.item) === normalizeText(itemText)
+      );
+
+      if (exists) {
+        alert("Este insumo ya se encuentra registrado en el centro.");
+        setIsAddingDetailNeed(false);
+        return;
+      }
+
+      const updatedNeeds = [...currentNeeds, { 
+        item: itemText, 
+        prioridad: newDetailNeedPriority 
+      }];
+
+      await updateCenterNeeds(selectedRecord.id, updatedNeeds);
+      
+      // Actualizar el estado local para reflejar el cambio de inmediato
+      setSelectedRecord(prev => ({
+        ...prev,
+        necesidades: updatedNeeds
+      }));
+
+      // Limpiar formulario
+      setNewDetailNeedItem('');
+      setNewDetailNeedPriority('alta');
+
+      // Recargar datos en segundo plano
+      await loadData(true);
+      
+      alert("Insumo agregado con éxito.");
+    } catch (error) {
+      console.error(error);
+      alert("Error al agregar el insumo. Por favor intenta de nuevo.");
+    } finally {
+      setIsAddingDetailNeed(false);
     }
   };
 
@@ -1407,6 +1467,56 @@ export default function App() {
                           ) : (
                             <p style={{ fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin necesidades registradas actualmente.</p>
                           )}
+
+                          {/* Sección para que cualquiera agregue insumos adicionales */}
+                          <div style={{ marginTop: '16px', borderTop: '1px dotted var(--color-border)', paddingTop: '12px' }}>
+                            <h5 style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                              ➕ ¿Falta algún insumo crítico?
+                            </h5>
+                            <form onSubmit={handleAddDetailNeed} className="flex-row-responsive" style={{ gap: '6px' }}>
+                              <input
+                                type="text"
+                                className="input-field"
+                                placeholder="Nombre del insumo (ej: Gasas)..."
+                                value={newDetailNeedItem}
+                                onChange={(e) => setNewDetailNeedItem(e.target.value)}
+                                required
+                                style={{ flex: 2, minHeight: '36px', height: '36px', padding: '6px 12px', fontSize: '12px' }}
+                              />
+                              <select
+                                className="select-field"
+                                value={newDetailNeedPriority}
+                                onChange={(e) => setNewDetailNeedPriority(e.target.value)}
+                                style={{ flex: 1, minHeight: '36px', height: '36px', padding: '6px 12px', fontSize: '12px' }}
+                              >
+                                <option value="alta">Alta</option>
+                                <option value="media">Media</option>
+                                <option value="baja">Baja</option>
+                              </select>
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={isAddingDetailNeed || !newDetailNeedItem.trim()}
+                                style={{
+                                  flex: 'none',
+                                  minHeight: '36px',
+                                  height: '36px',
+                                  padding: '0 12px',
+                                  fontSize: '12px',
+                                  backgroundColor: (newDetailNeedItem.trim() && !isAddingDetailNeed) ? 'var(--color-unicef)' : '#cbd5e1',
+                                  color: (newDetailNeedItem.trim() && !isAddingDetailNeed) ? '#ffffff' : '#64748b',
+                                  cursor: (newDetailNeedItem.trim() && !isAddingDetailNeed) ? 'pointer' : 'not-allowed',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                {isAddingDetailNeed && <div className="btn-spinner" style={{ margin: 0, width: '12px', height: '12px' }}></div>}
+                                Agregar
+                              </button>
+                            </form>
+                          </div>
                         </div>
                       </>
                     )}
