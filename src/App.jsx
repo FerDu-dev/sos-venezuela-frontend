@@ -82,6 +82,9 @@ export default function App() {
   // Estado de carga de base de datos
   const [loadingData, setLoadingData] = useState(true);
 
+  // Estado de envío de formularios
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Cargar datos
   const loadData = async (silent = false) => {
     if (!silent) setLoadingData(true);
@@ -349,28 +352,36 @@ export default function App() {
       return;
     }
 
-    const docData = {
-      ...personForm,
-      edad: Number(personForm.edad) || "",
-      fotoFile: personPhoto,
-      fotoBase64: personPhotoPreview // fallback localstorage
-    };
+    setIsSubmitting(true);
+    try {
+      const docData = {
+        ...personForm,
+        edad: Number(personForm.edad) || "",
+        fotoFile: personPhoto,
+        fotoBase64: personPhotoPreview // fallback localstorage
+      };
 
-    await addPerson(docData);
-    setShowReportModal(false);
+      await addPerson(docData);
+      setShowReportModal(false);
 
-    // Resetear formulario
-    setPersonForm({
-      nombre: '', edad: '', genero: 'Masculino',
-      estado: '', municipio: '', sector: '',
-      ultimaVez: '', señas: '',
-      reportanteNombre: '', reportanteTelefono: ''
-    });
-    setPersonPhoto(null);
-    setPersonPhotoPreview(null);
+      // Resetear formulario
+      setPersonForm({
+        nombre: '', edad: '', genero: 'Masculino',
+        estado: '', municipio: '', sector: '',
+        ultimaVez: '', señas: '',
+        reportanteNombre: '', reportanteTelefono: ''
+      });
+      setPersonPhoto(null);
+      setPersonPhotoPreview(null);
 
-    await loadData();
-    alert("Persona registrada con éxito.");
+      await loadData();
+      alert("Persona registrada con éxito.");
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar persona. Por favor intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePetSubmit = async (e) => {
@@ -380,25 +391,33 @@ export default function App() {
       return;
     }
 
-    const docData = {
-      ...petForm,
-      fotoFile: petPhoto,
-      fotoBase64: petPhotoPreview // fallback localstorage
-    };
+    setIsSubmitting(true);
+    try {
+      const docData = {
+        ...petForm,
+        fotoFile: petPhoto,
+        fotoBase64: petPhotoPreview // fallback localstorage
+      };
 
-    await addPet(docData);
-    setShowReportModal(false);
+      await addPet(docData);
+      setShowReportModal(false);
 
-    setPetForm({
-      nombre: '', especie: 'Perro', raza: '', color: '',
-      collar: 'No', estado: '', municipio: '', sector: '',
-      señas: '', contactoNombre: '', contactoTelefono: ''
-    });
-    setPetPhoto(null);
-    setPetPhotoPreview(null);
+      setPetForm({
+        nombre: '', especie: 'Perro', raza: '', color: '',
+        collar: 'No', estado: '', municipio: '', sector: '',
+        señas: '', contactoNombre: '', contactoTelefono: ''
+      });
+      setPetPhoto(null);
+      setPetPhotoPreview(null);
 
-    await loadData();
-    alert("Mascota registrada con éxito.");
+      await loadData();
+      alert("Mascota registrada con éxito.");
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar mascota. Por favor intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCenterSubmit = async (e) => {
@@ -408,23 +427,31 @@ export default function App() {
       return;
     }
 
-    const docData = {
-      ...centerForm,
-      necesidades: centerNeeds
-    };
+    setIsSubmitting(true);
+    try {
+      const docData = {
+        ...centerForm,
+        necesidades: centerNeeds
+      };
 
-    await addCenter(docData);
-    setShowCenterModal(false);
+      await addCenter(docData);
+      setShowCenterModal(false);
 
-    // Resetear formulario
-    setCenterForm({
-      nombre: '', estado: '', municipio: '', direccion: '',
-      contacto: '', horario: '', googleMapsUrl: ''
-    });
-    setCenterNeeds([]);
+      // Resetear formulario
+      setCenterForm({
+        nombre: '', estado: '', municipio: '', direccion: '',
+        contacto: '', horario: '', googleMapsUrl: ''
+      });
+      setCenterNeeds([]);
 
-    await loadData();
-    alert("Centro de acopio registrado con éxito.");
+      await loadData();
+      alert("Centro de acopio registrado con éxito.");
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar centro de acopio. Por favor intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGetLocation = () => {
@@ -464,9 +491,18 @@ export default function App() {
       alert("Por favor completa los campos obligatorios (*)");
       return;
     }
-    await handleStatusChange(selectedRecord.id, 'Localizado', recordType, finderForm);
-    setShowFinderModal(false);
-    setFinderForm({ nombre: '', telefono: '', ubicacion: '', notas: '' });
+    
+    setIsSubmitting(true);
+    try {
+      await handleStatusChange(selectedRecord.id, 'Localizado', recordType, finderForm);
+      setShowFinderModal(false);
+      setFinderForm({ nombre: '', telefono: '', ubicacion: '', notas: '' });
+    } catch (error) {
+      console.error(error);
+      alert("Error al confirmar localización. Por favor intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -1622,16 +1658,20 @@ export default function App() {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={!isPersonFormValid}
+                    disabled={!isPersonFormValid || isSubmitting}
                     style={{
                       width: '100%',
-                      backgroundColor: isPersonFormValid ? '#e03131' : '#cbd5e1',
-                      color: isPersonFormValid ? '#ffffff' : '#64748b',
-                      cursor: isPersonFormValid ? 'pointer' : 'not-allowed',
-                      opacity: isPersonFormValid ? 1 : 0.8
+                      backgroundColor: (isPersonFormValid && !isSubmitting) ? '#e03131' : '#cbd5e1',
+                      color: (isPersonFormValid && !isSubmitting) ? '#ffffff' : '#64748b',
+                      cursor: (isPersonFormValid && !isSubmitting) ? 'pointer' : 'not-allowed',
+                      opacity: (isPersonFormValid && !isSubmitting) ? 1 : 0.8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
                   >
-                    Registrar Persona
+                    {isSubmitting && <div className="btn-spinner"></div>}
+                    {isSubmitting ? "Registrando..." : "Registrar Persona"}
                   </button>
                 </div>
               </form>
@@ -1798,16 +1838,20 @@ export default function App() {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={!isPetFormValid}
+                    disabled={!isPetFormValid || isSubmitting}
                     style={{
                       width: '100%',
-                      backgroundColor: isPetFormValid ? '#e03131' : '#cbd5e1',
-                      color: isPetFormValid ? '#ffffff' : '#64748b',
-                      cursor: isPetFormValid ? 'pointer' : 'not-allowed',
-                      opacity: isPetFormValid ? 1 : 0.8
+                      backgroundColor: (isPetFormValid && !isSubmitting) ? '#e03131' : '#cbd5e1',
+                      color: (isPetFormValid && !isSubmitting) ? '#ffffff' : '#64748b',
+                      cursor: (isPetFormValid && !isSubmitting) ? 'pointer' : 'not-allowed',
+                      opacity: (isPetFormValid && !isSubmitting) ? 1 : 0.8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
                   >
-                    Registrar Mascota
+                    {isSubmitting && <div className="btn-spinner"></div>}
+                    {isSubmitting ? "Registrando..." : "Registrar Mascota"}
                   </button>
                 </div>
               </form>
@@ -1881,16 +1925,20 @@ export default function App() {
                 <button
                   type="submit"
                   className="btn btn-success"
-                  disabled={!isFinderFormValid}
+                  disabled={!isFinderFormValid || isSubmitting}
                   style={{
                     width: '100%',
-                    backgroundColor: isFinderFormValid ? 'var(--color-success)' : '#cbd5e1',
-                    color: isFinderFormValid ? '#ffffff' : '#64748b',
-                    cursor: isFinderFormValid ? 'pointer' : 'not-allowed',
-                    opacity: isFinderFormValid ? 1 : 0.8
+                    backgroundColor: (isFinderFormValid && !isSubmitting) ? 'var(--color-success)' : '#cbd5e1',
+                    color: (isFinderFormValid && !isSubmitting) ? '#ffffff' : '#64748b',
+                    cursor: (isFinderFormValid && !isSubmitting) ? 'pointer' : 'not-allowed',
+                    opacity: (isFinderFormValid && !isSubmitting) ? 1 : 0.8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
-                  Confirmar Localización
+                  {isSubmitting && <div className="btn-spinner"></div>}
+                  {isSubmitting ? "Procesando..." : "Confirmar Localización"}
                 </button>
               </div>
             </form>
@@ -2069,16 +2117,20 @@ export default function App() {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={!isCenterFormValid}
+                  disabled={!isCenterFormValid || isSubmitting}
                   style={{
                     width: '100%',
-                    backgroundColor: isCenterFormValid ? 'var(--color-unicef)' : '#cbd5e1',
-                    color: isCenterFormValid ? '#ffffff' : '#64748b',
-                    cursor: isCenterFormValid ? 'pointer' : 'not-allowed',
-                    opacity: isCenterFormValid ? 1 : 0.8
+                    backgroundColor: (isCenterFormValid && !isSubmitting) ? 'var(--color-unicef)' : '#cbd5e1',
+                    color: (isCenterFormValid && !isSubmitting) ? '#ffffff' : '#64748b',
+                    cursor: (isCenterFormValid && !isSubmitting) ? 'pointer' : 'not-allowed',
+                    opacity: (isCenterFormValid && !isSubmitting) ? 1 : 0.8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
-                  Registrar Centro de Acopio
+                  {isSubmitting && <div className="btn-spinner"></div>}
+                  {isSubmitting ? "Procesando..." : "Registrar Centro de Acopio"}
                 </button>
               </div>
             </form>
