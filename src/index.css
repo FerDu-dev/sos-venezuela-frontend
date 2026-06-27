@@ -237,11 +237,22 @@ body {
   background-color: #17935f;
 }
 
-/* Buscadores y Campos de texto */
 .search-wrapper {
   margin-bottom: 16px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .search-wrapper {
+    flex-direction: column !important;
+  }
+  .search-wrapper .input-field,
+  .search-wrapper .btn-action-top {
+    width: 100% !important;
+    flex: none !important;
+  }
 }
 
 .input-field {
@@ -1017,6 +1028,41 @@ body {
 }
 .fab-green:active {
   background-color: #1e7e34 !important;
+}
+
+/* --- LOADING SPINNER --- */
+.spinner-loader {
+  width: 42px;
+  height: 42px;
+  border: 4px solid var(--color-unicef-light);
+  border-top: 4px solid var(--color-unicef);
+  border-radius: 50%;
+  animation: spin-anim 1s linear infinite;
+  margin: 0 auto 16px auto;
+}
+
+@keyframes spin-anim {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- RESPONSIVE FLEX ROW --- */
+.flex-row-responsive {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .flex-row-responsive {
+    flex-direction: column !important;
+  }
+  .flex-row-responsive > button,
+  .flex-row-responsive > input,
+  .flex-row-responsive > select {
+    width: 100% !important;
+    flex: none !important;
+  }
 }
 
 

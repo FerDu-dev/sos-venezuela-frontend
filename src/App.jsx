@@ -79,17 +79,27 @@ export default function App() {
   const [showMapModal, setShowMapModal] = useState(false);
   const mapRef = useRef(null);
 
-  // Cargar datos
-  const loadData = async () => {
-    const fetchedPersons = await getPersons();
-    const fetchedPets = await getPets();
-    const fetchedCenters = await getCenters();
-    const fetchedMetrics = await getMetrics();
+  // Estado de carga de base de datos
+  const [loadingData, setLoadingData] = useState(true);
 
-    setPersons(fetchedPersons);
-    setPets(fetchedPets);
-    setCenters(fetchedCenters);
-    setMetrics(fetchedMetrics);
+  // Cargar datos
+  const loadData = async (silent = false) => {
+    if (!silent) setLoadingData(true);
+    try {
+      const fetchedPersons = await getPersons();
+      const fetchedPets = await getPets();
+      const fetchedCenters = await getCenters();
+      const fetchedMetrics = await getMetrics();
+
+      setPersons(fetchedPersons || []);
+      setPets(fetchedPets || []);
+      setCenters(fetchedCenters || []);
+      setMetrics(fetchedMetrics || null);
+    } catch (err) {
+      console.error("Error al cargar datos de Firebase:", err);
+    } finally {
+      if (!silent) setLoadingData(false);
+    }
   };
 
   useEffect(() => {
@@ -148,9 +158,9 @@ export default function App() {
         iconAnchor: [9, 9]
       });
 
-      const marker = window.L.marker([initialLat, initialLng], { 
-        icon: markerIcon, 
-        draggable: true 
+      const marker = window.L.marker([initialLat, initialLng], {
+        icon: markerIcon,
+        draggable: true
       }).addTo(map);
 
       // Actualizar marcador al hacer clic en el mapa
@@ -605,565 +615,588 @@ export default function App() {
 
       {/* CONTENIDO DINÁMICO */}
       <main className="app-content">
+        {loadingData ? (
+          <div className="card" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '64px 24px',
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            border: '1px solid var(--color-border)',
+            borderRadius: '12px',
+            backgroundColor: 'var(--bg-card)',
+            marginTop: '20px'
+          }}>
+            <div className="spinner-loader"></div>
+            <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+              Cargando información actualizada...
+            </h3>
 
-        {/* PESTAÑA 1: INICIO (DASHBOARD) */}
-        {activeTab === 'inicio' && (
-          <div className="dashboard-layout">
-            <div className="dashboard-main">
-              <div className="alert-banner">
-                <span className="alert-icon">⚠️</span>
-                <div className="alert-body">
-                  <h4>ESTADO DE ALERTA NACIONAL</h4>
-                  <p>Terremoto afectó la región centro-norte. Redes congestionadas. Prioriza reportar personas desaparecidas y compartir información oficial.</p>
-                </div>
-              </div>
+          </div>
+        ) : (
+          <>
+            {/* PESTAÑA 1: INICIO (DASHBOARD) */}
+            {activeTab === 'inicio' && (
+              <div className="dashboard-layout">
+                <div className="dashboard-main">
+                  <div className="alert-banner">
+                    <span className="alert-icon">⚠️</span>
+                    <div className="alert-body">
+                      <h4>ESTADO DE ALERTA NACIONAL</h4>
+                      <p>Terremoto afectó la región centro-norte. Redes congestionadas. Prioriza reportar personas desaparecidas y compartir información oficial.</p>
+                    </div>
+                  </div>
 
-              <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700' }}>Panel de Monitoreo en Tiempo Real</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700' }}>Panel de Monitoreo en Tiempo Real</h3>
 
-              {metrics ? (
-                <div className="dashboard-metrics" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-                  <div className="metric-card" style={{ background: 'var(--color-success-light, #ebfbee)', borderColor: 'var(--color-success, #12b886)' }}>
-                    <div className="metric-value success" style={{ color: 'var(--color-success, #2b8a3e)' }}>{metrics.centros ? metrics.centros.total : 0}</div>
-                    <div className="metric-label" style={{ fontWeight: '700', color: 'var(--color-success, #2b8a3e)' }}>Centros de Acopio Activos</div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-value danger">{metrics.personas.desaparecidas}</div>
-                    <div className="metric-label">Personas Desaparecidas</div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-value success">{metrics.personas.localizadas}</div>
-                    <div className="metric-label">Personas Localizadas</div>
-                    <span className="rate-badge">Tasa Éxito: {metrics.personas.tasaExito}%</span>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-value info">{metrics.mascotas.desaparecidas}</div>
-                    <div className="metric-label">Mascotas Perdidas</div>
-                  </div>
-                  <div className="metric-card">
-                    <div className="metric-value success">{metrics.mascotas.localizadas}</div>
-                    <div className="metric-label">Mascotas Halladas</div>
-                  </div>
-                </div>
-              ) : (
-                <p style={{ textAlign: 'center', padding: '16px' }}>Cargando métricas...</p>
-              )}
-
-              {/* Centros de Acopio Activos Recientes */}
-              <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-success-light, #ebfbee)' }}>
-                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-success, #2b8a3e)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  📦 Centros de Acopio Activos Recientes
-                </h4>
-                <div className="records-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-                  {centers.slice(0, 3).map(c => (
-                    <div key={c.id} className="card" onClick={() => { setSelectedRecord(c); setRecordType('center'); }} style={{ cursor: 'pointer', border: '1px solid var(--color-border)', margin: 0, padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-app)' }}>
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <h5 style={{ fontSize: '13px', fontWeight: '700', margin: 0 }}>{c.nombre}</h5>
-                          <span className="record-badge" style={{
-                            fontSize: '9px',
-                            padding: '2px 8px',
-                            backgroundColor: 'var(--color-success-light)',
-                            color: 'var(--color-success)'
-                          }}>Activo</span>
-                        </div>
-                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 6px 0', textAlign: 'left' }}>
-                          📍 {c.direccion} ({c.estado})
-                        </p>
-                        <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: '0 0 10px 0', textAlign: 'left' }}>
-                          📞 {c.contacto} | 🕒 {c.horario || 'No especificado'}
-                        </p>
+                  {metrics ? (
+                    <div className="dashboard-metrics" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                      <div className="metric-card" style={{ background: 'var(--color-success-light, #ebfbee)', borderColor: 'var(--color-success, #12b886)' }}>
+                        <div className="metric-value success" style={{ color: 'var(--color-success, #2b8a3e)' }}>{metrics.centros ? metrics.centros.total : 0}</div>
+                        <div className="metric-label" style={{ fontWeight: '700', color: 'var(--color-success, #2b8a3e)' }}>Centros de Acopio Activos</div>
                       </div>
-                      <div>
-                        <h6 style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px 0', fontWeight: '700', textAlign: 'left' }}>Insumos Críticos:</h6>
-                        <div className="supplies-grid" style={{ gap: '4px', justifyContent: 'flex-start' }}>
-                          {c.necesidades.slice(0, 3).map((n, idx) => (
-                            <div key={idx} className={`supply-item supply-${n.prioridad}`} style={{ padding: '2px 8px', fontSize: '9px' }}>
-                              <span>{n.item}</span>
-                            </div>
-                          ))}
-                          {c.necesidades.length > 3 && (
-                            <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>+{c.necesidades.length - 3} más</span>
-                          )}
-                          {c.necesidades.length === 0 && (
-                            <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin necesidades urgentes</span>
-                          )}
-                        </div>
+                      <div className="metric-card">
+                        <div className="metric-value danger">{metrics.personas.desaparecidas}</div>
+                        <div className="metric-label">Personas Desaparecidas</div>
+                      </div>
+                      <div className="metric-card">
+                        <div className="metric-value success">{metrics.personas.localizadas}</div>
+                        <div className="metric-label">Personas Localizadas</div>
+                        <span className="rate-badge">Tasa Éxito: {metrics.personas.tasaExito}%</span>
+                      </div>
+                      <div className="metric-card">
+                        <div className="metric-value info">{metrics.mascotas.desaparecidas}</div>
+                        <div className="metric-label">Mascotas Perdidas</div>
+                      </div>
+                      <div className="metric-card">
+                        <div className="metric-value success">{metrics.mascotas.localizadas}</div>
+                        <div className="metric-label">Mascotas Halladas</div>
                       </div>
                     </div>
-                  ))}
-                  {centers.length === 0 && (
-                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', padding: '16px', gridColumn: '1 / -1' }}>
-                      No hay centros de acopio registrados aún.
-                    </p>
+                  ) : (
+                    <p style={{ textAlign: 'center', padding: '16px' }}>Cargando métricas...</p>
                   )}
-                </div>
-                <button onClick={() => setActiveTab('acopio')} className="btn btn-secondary" style={{ marginTop: '16px', minHeight: '40px', padding: '8px' }}>
-                  Ver todos los centros de acopio ({centers.length}) →
-                </button>
-              </div>
 
-              {/* Contactos de Emergencia Rápidos */}
-              <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-danger-light)' }}>
-                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  🚨 Contactos de Emergencia Rápidos
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>VEN 911</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
-                    </div>
-                    <a href="tel:911" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a VEN 911">
-                      📞
-                    </a>
-                  </div>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Bomberos</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Caracas</span>
-                    </div>
-                    <a href="tel:02125454545" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Bomberos">
-                      📞
-                    </a>
-                  </div>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Protección Civil</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
-                    </div>
-                    <a href="tel:02126311543" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a PC">
-                      📞
-                    </a>
-                  </div>
-                  <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
-                    <div style={{ textAlign: 'left' }}>
-                      <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Cruz Roja</h5>
-                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
-                    </div>
-                    <a href="tel:02125782187" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Cruz Roja">
-                      📞
-                    </a>
-                  </div>
-                </div>
-                <button onClick={() => setActiveTab('emergencias')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '32px', height: '32px', padding: '4px', fontSize: '11px' }}>
-                  Ver todos los números por estado →
-                </button>
-              </div>
-
-              {/* Registro secundario de personas */}
-              <div className="card">
-                <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700' }}>Últimas personas reportadas</h4>
-                <div className="records-list">
-                  {persons.slice(0, 3).map(p => (
-                    <div key={p.id} className="record-card" onClick={() => { setSelectedRecord(p); setRecordType('person'); }} style={{ cursor: 'pointer', padding: '8px', borderRadius: '8px', background: 'var(--bg-app)' }}>
-                      {renderAvatar(p)}
-                      <div className="record-info">
-                        <div className="record-header">
-                          <span className="record-name">{p.nombre}</span>
-                          <span className={`record-badge badge-${p.estatus.toLowerCase()}`}>{p.estatus}</span>
-                        </div>
-                        <div className="record-details">
-                          <span>Última vez: <strong>{p.sector}, {p.estado}</strong></span>
-                          <span>Fecha: {new Date(p.fechaReporte).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => setActiveTab('personas')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '40px', padding: '8px' }}>
-                  Ver todos los reportes ({persons.length}) →
-                </button>
-              </div>
-            </div>
-
-            <aside className="dashboard-sidebar">
-              <div className="card" style={{ background: 'var(--color-success-light, #ebfbee)', borderColor: 'var(--color-success, #12b886)', textAlign: 'center', padding: '20px', marginBottom: '16px' }}>
-                <h4 style={{ color: 'var(--color-success, #2b8a3e)', marginBottom: '8px', fontSize: '15px' }}>¿Conoces un Centro de Acopio activo?</h4>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra un punto de recolección de donaciones para indicar qué insumos necesitan.</p>
-                <button onClick={() => setShowCenterModal(true)} className="btn btn-success">
-                  ➕ Registrar Centro de Acopio
-                </button>
-              </div>
-
-              <div className="card" style={{ background: 'var(--color-danger-light)', borderColor: 'var(--color-danger)', textAlign: 'center', padding: '20px', marginBottom: '16px' }}>
-                <h4 style={{ color: 'var(--color-danger)', marginBottom: '8px', fontSize: '15px' }}>¿Tienes un familiar o amigo no localizado?</h4>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra sus datos en nuestro censo cívico. Voluntarios y brigadas usan esta base de datos.</p>
-                <button onClick={() => { setReportFormTab('person'); setShowReportModal(true); }} className="btn btn-primary">
-                  ➕ Registrar Persona Desaparecida
-                </button>
-              </div>
-
-              <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>¿Perdiste una mascota durante el sismo?</h4>
-                <button onClick={() => { setReportFormTab('pet'); setShowReportModal(true); }} className="btn btn-secondary" style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}>
-                  🐾 Registrar Mascota Extraviada
-                </button>
-              </div>
-            </aside>
-          </div>
-        )}
-
-        {/* PESTAÑA 2: PERSONAS (BUSCADOR / LISTADO) */}
-        {activeTab === 'personas' && (
-          <div className="page-layout">
-            <aside className="page-sidebar">
-              <h4 className="sidebar-title">Filtros de Búsqueda</h4>
-
-              <div className="sidebar-group">
-                <h5>Estado</h5>
-                <div className="filter-tabs">
-                  <span
-                    className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
-                    onClick={() => setSelectedState('Todos')}
-                  >
-                    Todos los Estados
-                  </span>
-                  {VENEZUELAN_STATES.map(s => (
-                    <span
-                      key={s}
-                      className={`filter-pill ${selectedState === s ? 'active' : ''}`}
-                      onClick={() => setSelectedState(s)}
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="sidebar-group" style={{ marginTop: '16px' }}>
-                <h5>Estatus</h5>
-                <div className="filter-tabs">
-                  <span
-                    className={`filter-pill ${selectedStatus === 'Todos' ? 'active' : ''}`}
-                    onClick={() => setSelectedStatus('Todos')}
-                  >
-                    Cualquier Estatus
-                  </span>
-                  <span
-                    className={`filter-pill ${selectedStatus === 'Desaparecido' ? 'active' : ''}`}
-                    onClick={() => setSelectedStatus('Desaparecido')}
-                  >
-                    🔴 Desaparecidos
-                  </span>
-                  <span
-                    className={`filter-pill ${selectedStatus === 'Localizado' ? 'active' : ''}`}
-                    onClick={() => setSelectedStatus('Localizado')}
-                  >
-                    🟢 Localizados
-                  </span>
-                </div>
-              </div>
-            </aside>
-
-            <div className="page-main-content">
-              <div className="search-wrapper">
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre, sector o señas..."
-                  className="input-field"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary btn-action-top"
-                  onClick={() => {
-                    setReportFormTab('person');
-                    setShowReportModal(true);
-                  }}
-                >
-                  ➕ Reportar Persona
-                </button>
-              </div>
-
-              <div className="records-list">
-                {filteredPersons.length > 0 ? (
-                  filteredPersons.map(p => (
-                    <div key={p.id} className="card record-card" onClick={() => { setSelectedRecord(p); setRecordType('person'); }} style={{ cursor: 'pointer' }}>
-                      {renderAvatar(p)}
-                      <div className="record-info">
-                        <div className="record-header">
-                          <span className="record-name">{p.nombre}</span>
-                          <span className={`record-badge badge-${p.estatus.toLowerCase()}`}>{p.estatus}</span>
-                        </div>
-                        <div className="record-details">
-                          <span>Edad: <strong>{p.edad ? `${p.edad} años` : 'No especificada'}</strong></span>
-                          <span>Última vez en: <strong>{p.sector} ({p.estado})</strong></span>
-                          <span>Señas: {p.señas.substring(0, 50)}{p.señas.length > 50 ? '...' : ''}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No se encontraron reportes con estos criterios.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PESTAÑA 3: CENTROS DE ACOPIO */}
-        {activeTab === 'acopio' && (
-          <div className="page-layout">
-            <aside className="page-sidebar">
-              <h4 className="sidebar-title">Filtros de Búsqueda</h4>
-              <div className="sidebar-group">
-                <h5>Estado</h5>
-                <div className="filter-tabs">
-                  <span
-                    className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
-                    onClick={() => setSelectedState('Todos')}
-                  >
-                    Todos los Estados
-                  </span>
-                  {VENEZUELAN_STATES.map(s => (
-                    <span
-                      key={s}
-                      className={`filter-pill ${selectedState === s ? 'active' : ''}`}
-                      onClick={() => setSelectedState(s)}
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            <div className="page-main-content">
-              <div className="search-wrapper">
-                <input
-                  type="text"
-                  placeholder="Buscar centro de acopio por nombre o sector..."
-                  className="input-field"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn btn-success btn-action-top"
-                  onClick={() => setShowCenterModal(true)}
-                >
-                  ➕ Registrar Centro
-                </button>
-              </div>
-
-              <div className="records-list">
-                {filteredCenters.length > 0 ? (
-                  filteredCenters.map(c => (
-                    <div key={c.id} className="card" onClick={() => { setSelectedRecord(c); setRecordType('center'); }} style={{ cursor: 'pointer' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{c.nombre}</h4>
-                        <span className={`record-badge`} style={{
-                          backgroundColor: c.estatus === 'Activo' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
-                          color: c.estatus === 'Activo' ? 'var(--color-success)' : 'var(--color-danger)'
-                        }}>
-                          {c.estatus}
-                        </span>
-                      </div>
-
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                        📍 {c.direccion} ({c.estado})
-                      </p>
-                      <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                        📞 Contacto: {c.contacto} | 🕒 Horario: {c.horario}
-                      </p>
-
-                      <h5 style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '4px' }}>Insumos Requeridos:</h5>
-                      <div className="supplies-grid">
-                        {c.necesidades.map((n, idx) => (
-                          <div key={idx} className={`supply-item supply-${n.prioridad}`}>
-                            <span>{n.item}</span>
+                  {/* Centros de Acopio Activos Recientes */}
+                  <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-success-light, #ebfbee)' }}>
+                    <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-success, #2b8a3e)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      📦 Centros de Acopio Activos Recientes
+                    </h4>
+                    <div className="records-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                      {centers.slice(0, 3).map(c => (
+                        <div key={c.id} className="card" onClick={() => { setSelectedRecord(c); setRecordType('center'); }} style={{ cursor: 'pointer', border: '1px solid var(--color-border)', margin: 0, padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-app)' }}>
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                              <h5 style={{ fontSize: '13px', fontWeight: '700', margin: 0 }}>{c.nombre}</h5>
+                              <span className="record-badge" style={{
+                                fontSize: '9px',
+                                padding: '2px 8px',
+                                backgroundColor: 'var(--color-success-light)',
+                                color: 'var(--color-success)'
+                              }}>Activo</span>
+                            </div>
+                            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 6px 0', textAlign: 'left' }}>
+                              📍 {c.direccion} ({c.estado})
+                            </p>
+                            <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: '0 0 10px 0', textAlign: 'left' }}>
+                              📞 {c.contacto} | 🕒 {c.horario || 'No especificado'}
+                            </p>
                           </div>
-                        ))}
-                      </div>
+                          <div>
+                            <h6 style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px 0', fontWeight: '700', textAlign: 'left' }}>Insumos Críticos:</h6>
+                            <div className="supplies-grid" style={{ gap: '4px', justifyContent: 'flex-start' }}>
+                              {c.necesidades.slice(0, 3).map((n, idx) => (
+                                <div key={idx} className={`supply-item supply-${n.prioridad}`} style={{ padding: '2px 8px', fontSize: '9px' }}>
+                                  <span>{n.item}</span>
+                                </div>
+                              ))}
+                              {c.necesidades.length > 3 && (
+                                <span style={{ fontSize: '9px', color: 'var(--text-secondary)' }}>+{c.necesidades.length - 3} más</span>
+                              )}
+                              {c.necesidades.length === 0 && (
+                                <span style={{ fontSize: '9px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>Sin necesidades urgentes</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {centers.length === 0 && (
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', padding: '16px', gridColumn: '1 / -1' }}>
+                          No hay centros de acopio registrados aún.
+                        </p>
+                      )}
+                    </div>
+                    <button onClick={() => setActiveTab('acopio')} className="btn btn-secondary" style={{ marginTop: '16px', minHeight: '40px', padding: '8px' }}>
+                      Ver todos los centros de acopio ({centers.length}) →
+                    </button>
+                  </div>
 
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                        <a href={c.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" onClick={(e) => e.stopPropagation()} style={{ flex: 1, minHeight: '40px', padding: '6px' }}>
-                          🗺️ Ver Ruta en Maps
+                  {/* Contactos de Emergencia Rápidos */}
+                  <div className="card" style={{ marginBottom: '16px', borderColor: 'var(--color-danger-light)' }}>
+                    <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      🚨 Contactos de Emergencia Rápidos
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                      <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                        <div style={{ textAlign: 'left' }}>
+                          <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>VEN 911</h5>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                        </div>
+                        <a href="tel:911" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a VEN 911">
+                          📞
+                        </a>
+                      </div>
+                      <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                        <div style={{ textAlign: 'left' }}>
+                          <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Bomberos</h5>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Caracas</span>
+                        </div>
+                        <a href="tel:02125454545" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Bomberos">
+                          📞
+                        </a>
+                      </div>
+                      <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                        <div style={{ textAlign: 'left' }}>
+                          <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Protección Civil</h5>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                        </div>
+                        <a href="tel:02126311543" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a PC">
+                          📞
+                        </a>
+                      </div>
+                      <div className="emergency-contact-card" style={{ padding: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-app)', border: '1px solid var(--color-border)', borderRadius: '8px', margin: 0 }}>
+                        <div style={{ textAlign: 'left' }}>
+                          <h5 style={{ fontSize: '11px', margin: '0 0 2px 0', fontWeight: '700' }}>Cruz Roja</h5>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Nacional</span>
+                        </div>
+                        <a href="tel:02125782187" className="btn-call" style={{ width: '28px', height: '28px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Llamar a Cruz Roja">
+                          📞
                         </a>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No se encontraron centros de acopio.</p>
-                )}
+                    <button onClick={() => setActiveTab('emergencias')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '32px', height: '32px', padding: '4px', fontSize: '11px' }}>
+                      Ver todos los números por estado →
+                    </button>
+                  </div>
+
+                  {/* Registro secundario de personas */}
+                  <div className="card">
+                    <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '700' }}>Últimas personas reportadas</h4>
+                    <div className="records-list">
+                      {persons.slice(0, 3).map(p => (
+                        <div key={p.id} className="record-card" onClick={() => { setSelectedRecord(p); setRecordType('person'); }} style={{ cursor: 'pointer', padding: '8px', borderRadius: '8px', background: 'var(--bg-app)' }}>
+                          {renderAvatar(p)}
+                          <div className="record-info">
+                            <div className="record-header">
+                              <span className="record-name">{p.nombre}</span>
+                              <span className={`record-badge badge-${p.estatus.toLowerCase()}`}>{p.estatus}</span>
+                            </div>
+                            <div className="record-details">
+                              <span>Última vez: <strong>{p.sector}, {p.estado}</strong></span>
+                              <span>Fecha: {new Date(p.fechaReporte).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => setActiveTab('personas')} className="btn btn-secondary" style={{ marginTop: '12px', minHeight: '40px', padding: '8px' }}>
+                      Ver todos los reportes ({persons.length}) →
+                    </button>
+                  </div>
+                </div>
+
+                <aside className="dashboard-sidebar">
+                  <div className="card" style={{ background: 'var(--color-success-light, #ebfbee)', borderColor: 'var(--color-success, #12b886)', textAlign: 'center', padding: '20px', marginBottom: '16px' }}>
+                    <h4 style={{ color: 'var(--color-success, #2b8a3e)', marginBottom: '8px', fontSize: '15px' }}>¿Conoces un Centro de Acopio activo?</h4>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra un punto de recolección de donaciones para indicar qué insumos necesitan.</p>
+                    <button onClick={() => setShowCenterModal(true)} className="btn btn-success">
+                      ➕ Registrar Centro de Acopio
+                    </button>
+                  </div>
+
+                  <div className="card" style={{ background: 'var(--color-danger-light)', borderColor: 'var(--color-danger)', textAlign: 'center', padding: '20px', marginBottom: '16px' }}>
+                    <h4 style={{ color: 'var(--color-danger)', marginBottom: '8px', fontSize: '15px' }}>¿Tienes un familiar o amigo no localizado?</h4>
+                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px' }}>Registra sus datos en nuestro censo cívico. Voluntarios y brigadas usan esta base de datos.</p>
+                    <button onClick={() => { setReportFormTab('person'); setShowReportModal(true); }} className="btn btn-primary">
+                      ➕ Registrar Persona Desaparecida
+                    </button>
+                  </div>
+
+                  <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                    <h4 style={{ marginBottom: '8px', fontSize: '14px' }}>¿Perdiste una mascota durante el sismo?</h4>
+                    <button onClick={() => { setReportFormTab('pet'); setShowReportModal(true); }} className="btn btn-secondary" style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}>
+                      🐾 Registrar Mascota Extraviada
+                    </button>
+                  </div>
+                </aside>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* PESTAÑA 4: MASCOTAS */}
-        {activeTab === 'mascotas' && (
-          <div className="page-layout">
-            <aside className="page-sidebar">
-              <h4 className="sidebar-title">Filtros de Búsqueda</h4>
+            {/* PESTAÑA 2: PERSONAS (BUSCADOR / LISTADO) */}
+            {activeTab === 'personas' && (
+              <div className="page-layout">
+                <aside className="page-sidebar">
+                  <h4 className="sidebar-title">Filtros de Búsqueda</h4>
 
-              <div className="sidebar-group">
-                <h5>Estado</h5>
-                <div className="filter-tabs">
-                  <span
-                    className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
-                    onClick={() => setSelectedState('Todos')}
-                  >
-                    Todos los Estados
-                  </span>
-                  {VENEZUELAN_STATES.map(s => (
-                    <span
-                      key={s}
-                      className={`filter-pill ${selectedState === s ? 'active' : ''}`}
-                      onClick={() => setSelectedState(s)}
+                  <div className="sidebar-group">
+                    <h5>Estado</h5>
+                    <div className="filter-tabs">
+                      <span
+                        className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
+                        onClick={() => setSelectedState('Todos')}
+                      >
+                        Todos los Estados
+                      </span>
+                      {VENEZUELAN_STATES.map(s => (
+                        <span
+                          key={s}
+                          className={`filter-pill ${selectedState === s ? 'active' : ''}`}
+                          onClick={() => setSelectedState(s)}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="sidebar-group" style={{ marginTop: '16px' }}>
+                    <h5>Estatus</h5>
+                    <div className="filter-tabs">
+                      <span
+                        className={`filter-pill ${selectedStatus === 'Todos' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('Todos')}
+                      >
+                        Cualquier Estatus
+                      </span>
+                      <span
+                        className={`filter-pill ${selectedStatus === 'Desaparecido' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('Desaparecido')}
+                      >
+                        🔴 Desaparecidos
+                      </span>
+                      <span
+                        className={`filter-pill ${selectedStatus === 'Localizado' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('Localizado')}
+                      >
+                        🟢 Localizados
+                      </span>
+                    </div>
+                  </div>
+                </aside>
+
+                <div className="page-main-content">
+                  <div className="search-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre, sector o señas..."
+                      className="input-field"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-action-top"
+                      onClick={() => {
+                        setReportFormTab('person');
+                        setShowReportModal(true);
+                      }}
                     >
-                      {s}
-                    </span>
-                  ))}
+                      ➕ Reportar Persona
+                    </button>
+                  </div>
+
+                  <div className="records-list">
+                    {filteredPersons.length > 0 ? (
+                      filteredPersons.map(p => (
+                        <div key={p.id} className="card record-card" onClick={() => { setSelectedRecord(p); setRecordType('person'); }} style={{ cursor: 'pointer' }}>
+                          {renderAvatar(p)}
+                          <div className="record-info">
+                            <div className="record-header">
+                              <span className="record-name">{p.nombre}</span>
+                              <span className={`record-badge badge-${p.estatus.toLowerCase()}`}>{p.estatus}</span>
+                            </div>
+                            <div className="record-details">
+                              <span>Edad: <strong>{p.edad ? `${p.edad} años` : 'No especificada'}</strong></span>
+                              <span>Última vez en: <strong>{p.sector} ({p.estado})</strong></span>
+                              <span>Señas: {p.señas.substring(0, 50)}{p.señas.length > 50 ? '...' : ''}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No se encontraron reportes con estos criterios.</p>
+                    )}
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div className="sidebar-group" style={{ marginTop: '16px' }}>
-                <h5>Especie</h5>
-                <div className="filter-tabs">
-                  <span
-                    className={`filter-pill ${selectedSpecies === 'Todos' ? 'active' : ''}`}
-                    onClick={() => setSelectedSpecies('Todos')}
-                  >
-                    Todas las Especies
-                  </span>
-                  <span
-                    className={`filter-pill ${selectedSpecies === 'Perro' ? 'active' : ''}`}
-                    onClick={() => setSelectedSpecies('Perro')}
-                  >
-                    🐶 Perros
-                  </span>
-                  <span
-                    className={`filter-pill ${selectedSpecies === 'Gato' ? 'active' : ''}`}
-                    onClick={() => setSelectedSpecies('Gato')}
-                  >
-                    🐱 Gatos
-                  </span>
+            {/* PESTAÑA 3: CENTROS DE ACOPIO */}
+            {activeTab === 'acopio' && (
+              <div className="page-layout">
+                <aside className="page-sidebar">
+                  <h4 className="sidebar-title">Filtros de Búsqueda</h4>
+                  <div className="sidebar-group">
+                    <h5>Estado</h5>
+                    <div className="filter-tabs">
+                      <span
+                        className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
+                        onClick={() => setSelectedState('Todos')}
+                      >
+                        Todos los Estados
+                      </span>
+                      {VENEZUELAN_STATES.map(s => (
+                        <span
+                          key={s}
+                          className={`filter-pill ${selectedState === s ? 'active' : ''}`}
+                          onClick={() => setSelectedState(s)}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </aside>
+
+                <div className="page-main-content">
+                  <div className="search-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Buscar centro de acopio por nombre o sector..."
+                      className="input-field"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-success btn-action-top"
+                      onClick={() => setShowCenterModal(true)}
+                    >
+                      ➕ Registrar Centro
+                    </button>
+                  </div>
+
+                  <div className="records-list">
+                    {filteredCenters.length > 0 ? (
+                      filteredCenters.map(c => (
+                        <div key={c.id} className="card" onClick={() => { setSelectedRecord(c); setRecordType('center'); }} style={{ cursor: 'pointer' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{c.nombre}</h4>
+                            <span className={`record-badge`} style={{
+                              backgroundColor: c.estatus === 'Activo' ? 'var(--color-success-light)' : 'var(--color-danger-light)',
+                              color: c.estatus === 'Activo' ? 'var(--color-success)' : 'var(--color-danger)'
+                            }}>
+                              {c.estatus}
+                            </span>
+                          </div>
+
+                          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                            📍 {c.direccion} ({c.estado})
+                          </p>
+                          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                            📞 Contacto: {c.contacto} | 🕒 Horario: {c.horario}
+                          </p>
+
+                          <h5 style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '4px' }}>Insumos Requeridos:</h5>
+                          <div className="supplies-grid">
+                            {c.necesidades.map((n, idx) => (
+                              <div key={idx} className={`supply-item supply-${n.prioridad}`}>
+                                <span>{n.item}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                            <a href={c.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" onClick={(e) => e.stopPropagation()} style={{ flex: 1, minHeight: '40px', padding: '6px' }}>
+                              🗺️ Ver Ruta en Maps
+                            </a>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No se encontraron centros de acopio.</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </aside>
+            )}
 
-            <div className="page-main-content">
-              <div className="search-wrapper">
-                <input
-                  type="text"
-                  placeholder="Buscar por mascota, raza o color..."
-                  className="input-field"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn btn-warning btn-action-top"
-                  onClick={() => {
-                    setReportFormTab('pet');
-                    setShowReportModal(true);
+            {/* PESTAÑA 4: MASCOTAS */}
+            {activeTab === 'mascotas' && (
+              <div className="page-layout">
+                <aside className="page-sidebar">
+                  <h4 className="sidebar-title">Filtros de Búsqueda</h4>
+
+                  <div className="sidebar-group">
+                    <h5>Estado</h5>
+                    <div className="filter-tabs">
+                      <span
+                        className={`filter-pill ${selectedState === 'Todos' ? 'active' : ''}`}
+                        onClick={() => setSelectedState('Todos')}
+                      >
+                        Todos los Estados
+                      </span>
+                      {VENEZUELAN_STATES.map(s => (
+                        <span
+                          key={s}
+                          className={`filter-pill ${selectedState === s ? 'active' : ''}`}
+                          onClick={() => setSelectedState(s)}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="sidebar-group" style={{ marginTop: '16px' }}>
+                    <h5>Especie</h5>
+                    <div className="filter-tabs">
+                      <span
+                        className={`filter-pill ${selectedSpecies === 'Todos' ? 'active' : ''}`}
+                        onClick={() => setSelectedSpecies('Todos')}
+                      >
+                        Todas las Especies
+                      </span>
+                      <span
+                        className={`filter-pill ${selectedSpecies === 'Perro' ? 'active' : ''}`}
+                        onClick={() => setSelectedSpecies('Perro')}
+                      >
+                        🐶 Perros
+                      </span>
+                      <span
+                        className={`filter-pill ${selectedSpecies === 'Gato' ? 'active' : ''}`}
+                        onClick={() => setSelectedSpecies('Gato')}
+                      >
+                        🐱 Gatos
+                      </span>
+                    </div>
+                  </div>
+                </aside>
+
+                <div className="page-main-content">
+                  <div className="search-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Buscar por mascota, raza o color..."
+                      className="input-field"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-warning btn-action-top"
+                      onClick={() => {
+                        setReportFormTab('pet');
+                        setShowReportModal(true);
+                      }}
+                    >
+                      ➕ Reportar Mascota
+                    </button>
+                  </div>
+
+                  <div className="records-list">
+                    {filteredPets.length > 0 ? (
+                      filteredPets.map(m => (
+                        <div key={m.id} className="card record-card" onClick={() => { setSelectedRecord(m); setRecordType('pet'); }} style={{ cursor: 'pointer' }}>
+                          {renderAvatar(m, true)}
+                          <div className="record-info">
+                            <div className="record-header">
+                              <span className="record-name">{m.nombre}</span>
+                              <span className={`record-badge badge-${m.estatus.toLowerCase()}`}>{m.estatus}</span>
+                            </div>
+                            <div className="record-details">
+                              <span>Especie/Raza: <strong>{m.especie} ({m.raza || 'Mestizo'})</strong></span>
+                              <span>Ubicación: <strong>{m.sector} ({m.estado})</strong></span>
+                              <span>Color: {m.color} | Collar: {m.collar}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No se encontraron mascotas extraviadas.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PESTAÑA 5: CONTACTOS DE EMERGENCIA */}
+            {activeTab === 'emergencias' && (
+              <div>
+                <div className="card" style={{ background: 'var(--color-info-light)', borderColor: 'var(--color-info)', marginBottom: '16px' }}>
+                  <h4 style={{ color: 'var(--color-info)', marginBottom: '4px', fontSize: '14px' }}>Guía Rápida de Primeros Auxilios Terremoto</h4>
+                  <ul style={{ fontSize: '11px', color: 'var(--text-secondary)', paddingLeft: '16px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <li><strong>No uses ascensores</strong> bajo ninguna circunstancia. Usa las escaleras.</li>
+                    <li><strong>Ubica zonas seguras</strong> alejadas de vidrios, postes o fachadas caídas.</li>
+                    <li><strong>Raciona el agua potable</strong> de inmediato y desconecta el gas en tu hogar.</li>
+                    <li><strong>Cierra la llave de paso</strong> si hay fugas de agua.</li>
+                  </ul>
+                </div>
+
+                <h3 style={{ marginBottom: '12px', fontSize: '15px', fontWeight: '700' }}>Directorio Telefónico Directo</h3>
+
+                {Object.keys(emergencyContacts).map(state => (
+                  <div key={state} className="card" style={{ padding: '12px' }}>
+                    <h4 style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '6px', marginBottom: '8px', color: 'var(--color-danger)', fontSize: '14px' }}>
+                      📍 Estado {state}
+                    </h4>
+                    <div className="emergency-grid">
+                      {emergencyContacts[state].map((contact, idx) => (
+                        <div key={idx} className="emergency-contact-card">
+                          <div className="emergency-contact-info">
+                            <h4>{contact.cargo}</h4>
+                            <p>{contact.desc}</p>
+                            <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{contact.telf}</strong>
+                          </div>
+                          <a href={`tel:${contact.telf.replace(/-/g, "")}`} className="btn-call" title={`Llamar a ${contact.cargo}`}>
+                            📞
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* FOOTER */}
+            <footer style={{
+              marginTop: '40px',
+              padding: '24px 16px',
+              borderTop: '1px solid var(--color-border)',
+              textAlign: 'center',
+              backgroundColor: 'var(--bg-card)',
+              color: 'var(--text-secondary)',
+              fontSize: '12px',
+              lineHeight: '1.6'
+            }}>
+              <div style={{ fontWeight: '600', marginBottom: '8px' }}>
+                by SAMA LOGISTICA 3 C.A / Fernando Duno
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <a
+                  href="https://instagram.com/samalogistica"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'var(--color-unicef)',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontWeight: '700'
                   }}
                 >
-                  ➕ Reportar Mascota
-                </button>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
+                    <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.444-.048-3.298c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z" />
+                  </svg>
+                  @samalogistica
+                </a>
               </div>
-
-              <div className="records-list">
-                {filteredPets.length > 0 ? (
-                  filteredPets.map(m => (
-                    <div key={m.id} className="card record-card" onClick={() => { setSelectedRecord(m); setRecordType('pet'); }} style={{ cursor: 'pointer' }}>
-                      {renderAvatar(m, true)}
-                      <div className="record-info">
-                        <div className="record-header">
-                          <span className="record-name">{m.nombre}</span>
-                          <span className={`record-badge badge-${m.estatus.toLowerCase()}`}>{m.estatus}</span>
-                        </div>
-                        <div className="record-details">
-                          <span>Especie/Raza: <strong>{m.especie} ({m.raza || 'Mestizo'})</strong></span>
-                          <span>Ubicación: <strong>{m.sector} ({m.estado})</strong></span>
-                          <span>Color: {m.color} | Collar: {m.collar}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No se encontraron mascotas extraviadas.</p>
-                )}
-              </div>
-            </div>
-          </div>
+            </footer>
+          </>
         )}
-
-        {/* PESTAÑA 5: CONTACTOS DE EMERGENCIA */}
-        {activeTab === 'emergencias' && (
-          <div>
-            <div className="card" style={{ background: 'var(--color-info-light)', borderColor: 'var(--color-info)', marginBottom: '16px' }}>
-              <h4 style={{ color: 'var(--color-info)', marginBottom: '4px', fontSize: '14px' }}>Guía Rápida de Primeros Auxilios Terremoto</h4>
-              <ul style={{ fontSize: '11px', color: 'var(--text-secondary)', paddingLeft: '16px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <li><strong>No uses ascensores</strong> bajo ninguna circunstancia. Usa las escaleras.</li>
-                <li><strong>Ubica zonas seguras</strong> alejadas de vidrios, postes o fachadas caídas.</li>
-                <li><strong>Raciona el agua potable</strong> de inmediato y desconecta el gas en tu hogar.</li>
-                <li><strong>Cierra la llave de paso</strong> si hay fugas de agua.</li>
-              </ul>
-            </div>
-
-            <h3 style={{ marginBottom: '12px', fontSize: '15px', fontWeight: '700' }}>Directorio Telefónico Directo</h3>
-
-            {Object.keys(emergencyContacts).map(state => (
-              <div key={state} className="card" style={{ padding: '12px' }}>
-                <h4 style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '6px', marginBottom: '8px', color: 'var(--color-danger)', fontSize: '14px' }}>
-                  📍 Estado {state}
-                </h4>
-                <div className="emergency-grid">
-                  {emergencyContacts[state].map((contact, idx) => (
-                    <div key={idx} className="emergency-contact-card">
-                      <div className="emergency-contact-info">
-                        <h4>{contact.cargo}</h4>
-                        <p>{contact.desc}</p>
-                        <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{contact.telf}</strong>
-                      </div>
-                      <a href={`tel:${contact.telf.replace(/-/g, "")}`} className="btn-call" title={`Llamar a ${contact.cargo}`}>
-                        📞
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* FOOTER */}
-        <footer style={{
-          marginTop: '40px',
-          padding: '24px 16px',
-          borderTop: '1px solid var(--color-border)',
-          textAlign: 'center',
-          backgroundColor: 'var(--bg-card)',
-          color: 'var(--text-secondary)',
-          fontSize: '12px',
-          lineHeight: '1.6'
-        }}>
-          <div style={{ fontWeight: '600', marginBottom: '8px' }}>
-            by SAMA LOGISTICA 3 C.A / Fernando Duno
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <a 
-              href="https://instagram.com/samalogistica" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ 
-                color: 'var(--color-unicef)', 
-                textDecoration: 'none', 
-                display: 'inline-flex', 
-                alignItems: 'center',
-                fontWeight: '700'
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
-                <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.444-.048-3.298c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/>
-              </svg>
-              @samalogistica
-            </a>
-          </div>
-        </footer>
 
       </main>
 
@@ -1182,12 +1215,12 @@ export default function App() {
         </button>
 
         {/* Acopio - Botón Prominente Destacado */}
-        <button 
-          className={`tab-item ${activeTab === 'acopio' ? 'active' : ''}`} 
+        <button
+          className={`tab-item ${activeTab === 'acopio' ? 'active' : ''}`}
           onClick={() => { setActiveTab('acopio'); setSearchQuery(''); }}
           style={{ position: 'relative', overflow: 'visible' }}
         >
-          <div 
+          <div
             style={{
               backgroundColor: activeTab === 'acopio' ? 'var(--color-success)' : '#c2f2d9',
               color: activeTab === 'acopio' ? '#ffffff' : 'var(--color-success)',
@@ -1197,8 +1230,8 @@ export default function App() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: activeTab === 'acopio' 
-                ? '0 4px 10px rgba(30, 184, 120, 0.35)' 
+              boxShadow: activeTab === 'acopio'
+                ? '0 4px 10px rgba(30, 184, 120, 0.35)'
                 : '0 2px 8px rgba(30, 184, 120, 0.25)',
               transform: 'translateY(-14px)',
               position: 'absolute',
@@ -1210,7 +1243,7 @@ export default function App() {
           >
             📦
           </div>
-          <span style={{ 
+          <span style={{
             marginTop: '28px',
             color: 'var(--color-success)',
             fontWeight: activeTab === 'acopio' ? '800' : '700'
@@ -1955,7 +1988,7 @@ export default function App() {
 
               <div className="form-group">
                 <label className="form-label">Ubicación Geográfica (Opcional)</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="flex-row-responsive">
                   <input
                     type="url"
                     className="input-field"
@@ -1979,7 +2012,7 @@ export default function App() {
               <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '20px', paddingTop: '16px' }}>
                 <h4 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>Insumos Requeridos</h4>
 
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <div className="flex-row-responsive" style={{ marginBottom: '12px' }}>
                   <input
                     type="text"
                     className="input-field"
@@ -2078,13 +2111,13 @@ export default function App() {
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
                 📍 Haz clic o arrastra el marcador rojo para señalar la ubicación del centro de acopio.
               </p>
-              
+
               {/* Contenedor del Mapa */}
-              <div 
-                id="select-map" 
-                style={{ 
-                  height: '320px', 
-                  width: '100%', 
+              <div
+                id="select-map"
+                style={{
+                  height: '320px',
+                  width: '100%',
                   backgroundColor: '#e9ecef',
                   borderRadius: '8px',
                   boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)',
@@ -2094,17 +2127,17 @@ export default function App() {
               ></div>
             </div>
             <div className="modal-footer" style={{ display: 'flex', gap: '8px', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={() => window.centerMapOnGPS && window.centerMapOnGPS()}
                 style={{ flex: 1, minHeight: '40px', fontSize: '13px' }}
               >
                 🛰️ Centrar en mi GPS
               </button>
-              <button 
-                type="button" 
-                className="btn btn-primary" 
+              <button
+                type="button"
+                className="btn btn-primary"
                 onClick={() => window.saveSelectedMapLocation && window.saveSelectedMapLocation()}
                 style={{ flex: 1, minHeight: '40px', fontSize: '13px', backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)' }}
               >
